@@ -1,4 +1,4 @@
-# cmdr stats
+# cmdr stats https://img.shields.io/github/directory-file-count/GuySchnidrig/cmdr_stats
 Author: Guy Schnidrig
 
 This repository contains code and data for analyzing statistics of games played with Commander decks.

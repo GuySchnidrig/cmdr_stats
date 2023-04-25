@@ -20,6 +20,7 @@ library(shiny)
 library(flexdashboard)
 library(scryr)
 library(jsonlite)
+library(httr)
 library(data.table)
 library(dtplyr)
 
@@ -31,8 +32,8 @@ options(scipen = 999,
         dplyr.summarise.inform = FALSE)
 
 # Set WD
-dir_path_primary <- "G:/Meine Ablage/MTG"
-dir_path_fallback <- "G:/My Drive/MTG"
+dir_path_primary <- "G:/Meine Ablage/MTG/cmdr_stats"
+dir_path_fallback <- "G:/My Drive/MTG/cmdr_stats"
 
 # attempt to set the working directory to the primary file path
 tryCatch(
@@ -82,28 +83,29 @@ deck_list <- deck_list %>%
 
 
 res_list <- lapply(deck_list$Deck_Link, httr::GET)
+json_text_list <- lapply(res_list, content, as = "text") 
+json_data_list <- lapply(json_text_list, fromJSON)
 
-jsonlite::fromJSON(rawToChar(res_list[[1]]$content))
-# Apply fromJSON() to each element in res_list
-data_res <- lapply(res_list, function(x) {
-  # Extract the content from the response and convert it to a character string
-  content <- rawToChar(x$content)
-  # Parse the content as JSON
-  jsonlite::fromJSON(content)
-})
-
-res = httr::GET("https://archidekt.com/api/decks/2633028/")
-data_res = fromJSON(rawToChar(res$content))
-
-x = as.integer(data_res$cards$quantity)
-y = data_res$cards$card$uid
-deckguy <- tibble(x,y) %>%
+quantity_list <- lapply(json_data_list, function(i) {
+  x = i$cards$quantity 
+  y = i$cards$card$uid
+  name <- tibble(x,y) %>%
   rename(Quantity = x,
-         id = y)
+         id = y)})
 
-card_names <- lapply(deckguy$id, scry_card)
-list_data  <- Map(as.data.frame, card_names)
+card_names_list <- lapply(quantity_list, function(i){
+  lapply(i$id, scry_card)
+  })
+
+
+card_names <- lapply(t[[1]]$id, scry_card)
+
+list_data_list <- lapply(card_names_list,  Map, as.frame)
+  
+list_data <- Map(as.data.frame, card_names)
+
 datarbind <- rbindlist(list_data, fill=TRUE)
+
 datarbind <- datarbind %>%
   select(id, name, cmc, type_line, color_identity) %>%
   as_tibble()

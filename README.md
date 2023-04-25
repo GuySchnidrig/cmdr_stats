@@ -1,6 +1,5 @@
 # cmdr stats
 Author: Guy Schnidrig
-Date: 26 April, 2023
 
 This repository contains code and data for analyzing statistics of games played with Commander decks.
 

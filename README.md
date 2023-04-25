@@ -7,18 +7,19 @@ This repository contains code and data for analyzing statistics of games played 
 ## Requirements
 This project requires the following R packages:
 
-tidyverse
-plotly
-readxl
-flextable
-shiny
-flexdashboard
-scryr
-jsonlite
-httr
-data.table
-dtplyr
-lubridate
+*tidyverse
+*plotly
+*readxl
+*flextable
+*shiny
+*flexdashboard
+*scryr
+*jsonlite
+*httr
+*data.table
+*dtplyr
+*lubridate
+
 ## Data
 The data used for this analysis is stored in cmdr.xlsx file. The data is read into R using read_excel() function from readxl package.
 

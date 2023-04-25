@@ -50,11 +50,9 @@ tryCatch(
   }
 )
 
-
 # Read Data
 data <- read_excel("cmdr.xlsx") %>%
   as_tibble()
-
 
 # Set Deck ID
 data <- data %>%
@@ -69,20 +67,24 @@ data[cols] <- lapply(data[cols], factor)
 # Set Date
 data$Date <- lubridate::dmy(data$Date)
 
-# Get Deck meta Data
+# Get Deck links
 deck_list <- data %>%
   filter(grepl("archidekt", Deck_Link)) %>%
-  select(Deck_Link)
+  select(Deck_Link, Deck_ID)
 
+# Add right api path and ending
 deck_list$Deck_Link <- deck_list$Deck_Link %>%
   str_replace(.,"decks", "api/decks") %>%
   gsub("#.*", "", .) 
 
 deck_list <- deck_list %>%
-  mutate(Deck_Link = paste0(Deck_Link,"/"))
+  mutate(Deck_Link_clean = paste0(Deck_Link,"/")) %>%
+  select(-Deck_Link)
 
+data <- left_join(data, deck_list, by = "Deck_ID") 
 
-res_list <- lapply(deck_list$Deck_Link, httr::GET)
+# Get Deck lists
+res_list <- lapply(deck_list$Deck_Link_clean, httr::GET)
 json_text_list <- lapply(res_list, content, as = "text") 
 json_data_list <- lapply(json_text_list, fromJSON)
 
@@ -93,26 +95,16 @@ quantity_list <- lapply(json_data_list, function(i) {
   rename(Quantity = x,
          id = y)})
 
-card_names_list <- lapply(quantity_list, function(i){
-  lapply(i$id, scry_card)
+# Get all Scryfall data
+srcyfall_data <- fread("srcyfall_data.csv")
+
+# Add meta data to decks
+commander_decks <- lapply(quantity_list, function(i){
+  left_join(i, srcyfall_data, by = "id")
   })
 
-
-card_names <- lapply(t[[1]]$id, scry_card)
-
-list_data_list <- lapply(card_names_list,  Map, as.frame)
-  
-list_data <- Map(as.data.frame, card_names)
-
-datarbind <- rbindlist(list_data, fill=TRUE)
-
-datarbind <- datarbind %>%
-  select(id, name, cmc, type_line, color_identity) %>%
-  as_tibble()
-
-deck_1 <- left_join(deckguy, datarbind, by ="id")
-
-DT::datatable(deck_1, filter = 'top')
+names(commander_decks) <- c(deck_list$Deck_Link_clean)
+DT::datatable(commander_decks$`https://archidekt.com/api/decks/2564814/`, filter = 'top')
 
 ```
 
@@ -163,29 +155,11 @@ data %>%
 ### Mana Value Distribution
 
 ```{r,echo=FALSE}
-res = httr::GET("https://archidekt.com/api/decks/2633028/")
-
-data_res = fromJSON(rawToChar(res$content))
-x = as.integer(data_res$cards$quantity)
-y = data_res$cards$card$uid
-deckguy <- tibble(x,y) %>%
-  rename(Quantity = x,
-         id = y)
-
-card_names <- lapply(deckguy$id, scry_card)
-list_data  <- Map(as.data.frame, card_names)
-datarbind <- rbindlist(list_data, fill=TRUE)
-datarbind <- datarbind %>%
-  select(id, name, cmc, type_line, color_identity) %>%
-  as_tibble()
-
-deck_1 <- left_join(deckguy, datarbind, by ="id")
-
-ggplotly(deck_1 %>%
+ggplotly(commander_decks$`https://archidekt.com/api/decks/2564814/` %>%
   filter(cmc > 0) %>%
   ggplot(aes(x = cmc)) +
   geom_histogram(binwidth = 1, fill = "steelblue") +
-  scale_x_continuous(breaks = seq(0, length(deck_1$cmc), 1)) +
+  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
   theme_bw())
   
 ```
@@ -193,7 +167,6 @@ ggplotly(deck_1 %>%
 # Data
 
 ```{r, echo=FALSE}
-
 DT::datatable(data, filter = 'top')
 
 ```

@@ -3,6 +3,8 @@ Author: Guy Schnidrig
 
 This repository contains code and data for analyzing statistics of games played with Commander decks.
 
+![alt text](https://raw.githubusercontent.com/GuySchnidrig/cmdr_stats/main/github_dashboard.PNG)
+
 ## Requirements
 This project requires the following R packages:
 

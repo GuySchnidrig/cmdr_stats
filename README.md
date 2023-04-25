@@ -1,4 +1,4 @@
-. image:: https://img.shields.io/github/directory-file-count/GuySchnidrig/cmdr_stats
+.. image:: https://img.shields.io/github/directory-file-count/GuySchnidrig/cmdr_stats
 
 # cmdr stats 
 Author: Guy Schnidrig

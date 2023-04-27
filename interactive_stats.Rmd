@@ -124,7 +124,7 @@ ggplotly(data %>%
           theme_bw())
 ```
 
-### Nomral Games played
+### Normal Games played
 ```{r, echo = FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%

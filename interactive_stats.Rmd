@@ -6,11 +6,9 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
-  
 ---
 
-
-```{r, setup, include = FALSE, echo = FALSE}
+```{r global,, setup, include = FALSE, echo = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(plotly)
@@ -60,7 +58,7 @@ data <- data %>%
   ungroup()
 
 # Set Factors
-cols <- c("Game_ID","Player", "Commander", "Colors", "Win_Type", "MV_Card", "Deck_ID")
+cols <- c("Game_ID","Game_Type", "Player", "Commander", "Colors", "Win_Type", "MV_Card", "Deck_ID")
 data[cols] <- lapply(data[cols], factor)
 
 # Set Date
@@ -105,23 +103,37 @@ commander_decks <- lapply(quantity_list, function(i){
 names(commander_decks) <- c(deck_list$Deck_Link_clean)
 DT::datatable(commander_decks$`https://archidekt.com/api/decks/2564814/`, filter = 'top')
 
+unlist(commander_decks)
+
 ```
 
 # Dashboard
 
-Column {data-width=650}
+Column {data-width=650, .tabset}
 -----------------------------------------------------------------------
 
-### Games played
+### All Games played
 
 ```{r, echo = FALSE}
 ggplotly(data %>%
-  group_by(Player) %>%
-  summarise(`Played Games` = length(Game_ID)) %>%
-  ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
-  geom_bar(stat='identity') +
-  labs(x = "", y = "Games Played") +
-  theme_bw())
+          group_by(Player) %>%
+          summarise(`Played Games` = length(Game_ID)) %>%
+          ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
+          geom_bar(stat='identity') +
+          labs(x = "", y = "Games Played") +
+          theme_bw())
+```
+
+### Nomral Games played
+```{r, echo = FALSE}
+ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
+           group_by(Player) %>%
+           summarise(`Played Games` = length(Game_ID)) %>%
+           ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
+           geom_bar(stat='identity') +
+           labs(x = "", y = "Games Played") +
+           theme_bw())
 ```
 
 Column {data-width=350}
@@ -256,7 +268,25 @@ ggplotly(data %>%
 
 ```
 
-# Connect Decks Stats
-```{r}
+# Guy {data-navmenu="Player Profiles "} 
+Column {data-width=350}
+-----------------------------------------------------------------------
+```{r, echo=FALSE}
 
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+```{r, echo=FALSE}
+decks_guy<- data %>%
+  filter(Player == "Guy") %>%
+  select(Deck_ID)
+
+
+ggplotly(commander_decks$`https://archidekt.com/api/decks/2564814/` %>%
+  filter(cmc > 0, ) %>%
+  ggplot(aes(x = cmc)) +
+  geom_histogram(binwidth = 1, fill = "steelblue") +
+  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
+  theme_bw())
 ```

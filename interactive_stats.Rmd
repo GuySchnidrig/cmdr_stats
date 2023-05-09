@@ -98,52 +98,59 @@ srcyfall_data <- fread("srcyfall_data.csv")
 
 # Add meta data to decks
 commander_decks <- lapply(quantity_list, function(i){
-  left_join(i, srcyfall_data, by = "id")
-  })
+  left_join(i, srcyfall_data, by = "id")})
 
+# rename the list items
 names(commander_decks) <- c(deck_list$Deck_Link_clean)
-DT::datatable(commander_decks$`https://archidekt.com/api/decks/2564814/`, filter = 'top')
 
-unlist(commander_decks)
+# add link to data frame
+commander_decks <- Map(cbind, commander_decks, Deck_Link_clean=names(commander_decks))
 
+# Create data frame with all decks
+all_decks <- data.table::rbindlist(commander_decks)
+
+deck_infos <- data %>%
+   select(Deck_Link_clean, Deck_ID, Player, Game_Type, Commander)
+
+all_decks<- left_join(all_decks, deck_infos, by = "Deck_Link_clean")
+
+DT::datatable(all_decks, filter = 'top')
 ```
 
 # Dashboard
 
-Column {data-width=650, .tabset}
+Column {data-width=650}
 -----------------------------------------------------------------------
-
-### All Games played
-
-```{r, echo = FALSE}
-ggplotly(data %>%
-          group_by(Player) %>%
-          summarise(`Played Games` = length(Game_ID)) %>%
-          ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
-          geom_bar(stat='identity') +
-          labs(x = "", y = "Games Played") +
-          theme_bw())
-```
-
 ### Normal Games played
 ```{r, echo = FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
            group_by(Player) %>%
-           summarise(`Played Games` = length(Game_ID)) %>%
-           ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
+           summarise(Played_Games = length(Game_ID)) %>%
+           ggplot(aes(x =reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
            geom_bar(stat='identity') +
-           labs(x = "", y = "Games Played") +
+           labs(x = "", y = "Games_Played") + 
            theme_bw())
 ```
+### Total Games Won
+```{r, echo = FALSE}
+data %>%
+  filter(Game_Type != "Draft") %>%
+  filter(Win >= 1) %>%
+  plot_ly(., labels = ~Player, values = ~Win, type = 'pie') %>% 
+          layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                 yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
 
-Column {data-width=350}
+
+
+Row
 -----------------------------------------------------------------------
-
 ### Statistics
 
 ```{r, echo = FALSE}
 data %>%
+  filter(Game_Type != "Draft") %>%
   summarise(`Total Games` = length(unique(Game_ID)),
             `Unique Players` = length(unique(Player)),
             `Unique Commanders` = length(unique(Commander)),
@@ -155,6 +162,7 @@ data %>%
 
 ```{r, echo = FALSE}
  data %>% 
+  filter(Game_Type != "Draft") %>%
   group_by(Commander) %>%
   summarise(`Games played` = length(Commander),
             Wins = sum(Win)) %>%
@@ -164,14 +172,24 @@ data %>%
 ```
 
 
-### Mana Value Distribution
+### Mana Value Distribution of all decks played
 
 ```{r,echo=FALSE}
-ggplotly(commander_decks$`https://archidekt.com/api/decks/2564814/` %>%
+ggplotly(all_decks %>%
+  filter(cmc > 0) %>%
+  ggplot(aes(x = cmc, fill = Player)) +
+  geom_histogram(binwidth = 1, position = "dodge") +
+  scale_x_continuous(breaks = seq(0, 12, 1)) +
+  theme_bw())
+  
+```
+
+```{r,echo=FALSE}
+ggplotly(all_decks %>%
   filter(cmc > 0) %>%
   ggplot(aes(x = cmc)) +
   geom_histogram(binwidth = 1, fill = "steelblue") +
-  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
+  scale_x_continuous(breaks = seq(0, 12, 1)) +
   theme_bw())
   
 ```
@@ -185,19 +203,21 @@ DT::datatable(data, filter = 'top')
 # Games played {data-navmenu="Graphs"}
 ```{r, echo = FALSE}
 ggplotly(data %>%
-  group_by(Player) %>%
-  summarise(`Played Games` = length(Game_ID)) %>%
-  ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
-  geom_bar(stat='identity') +
-  labs(x = "", y = "Games Played") +
-  theme_bw())
-
+           filter(Game_Type != "Draft") %>%  
+           group_by(Player) %>%
+           summarise(`Played Games` = length(Game_ID)) %>%
+           ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
+           geom_bar(stat='identity') +
+           labs(x = "", y = "Games Played") +
+           theme_bw())
+ 
 ```
 
 
 # Total Games Played By Color and Player {data-navmenu="Graphs"}
 ```{r, echo=FALSE, warning=FALSE}
 ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
            group_by(Commander, Player) %>%
            summarise(Played_Games = length(Game_ID)) %>%
            ggplot(aes(x = reorder(Commander,-Played_Games), y = Played_Games, fill = Player)) +
@@ -210,17 +230,19 @@ ggplotly(data %>%
 # Total Games Played By Color {data-navmenu="Graphs"}
 ```{r TGPCol, echo=FALSE, warning=FALSE}
 ggplotly(data %>%
-  group_by(Colors, Player) %>%
-  summarise(Played_Games = length(Game_ID)) %>%
-  ggplot(aes(x = reorder(Colors,-Played_Games), y = Played_Games, fill = Player)) +
-  geom_bar(stat='identity') +
-  labs(x = "", y = "Games_Played") +
-  theme_bw())
+            filter(Game_Type != "Draft") %>%
+            group_by(Colors, Player) %>%
+            summarise(Played_Games = length(Game_ID)) %>%
+            ggplot(aes(x = reorder(Colors,-Played_Games), y = Played_Games, fill = Player)) +
+            geom_bar(stat='identity') +
+            labs(x = "", y = "Games_Played") +
+            theme_bw())
 ```
 
 # Total Games Won By Player {data-navmenu="Graphs"}
 ```{r TGW, echo=FALSE}
 ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
   group_by(Player) %>%
   summarise(Won_games = sum(Win, na.rm = TRUE)) %>%
   ggplot(aes(x = reorder(Player,-Won_games), y = Won_games, fill = Player)) +
@@ -233,6 +255,7 @@ ggplotly(data %>%
 # Relative Games Won By Player {data-navmenu="Graphs"} 
 ```{r RGW, echo=FALSE}
 ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
   group_by(Player) %>%
   summarise(Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   ggplot(aes(x = reorder(Player,-Won_games_relative), y = Won_games_relative, fill = Player)) +
@@ -244,6 +267,7 @@ ggplotly(data %>%
 # Total Games Won By Commander And Player {data-navmenu="Graphs"} 
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
            group_by(Commander, Player) %>%
            summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
            filter(Won_Games >= 1) %>%
@@ -258,6 +282,7 @@ ggplotly(data %>%
 # Total Games Won By Color And Player {data-navmenu="Graphs"} 
 ```{r Colorwin, echo=FALSE}
 ggplotly(data %>%
+           filter(Game_Type != "Draft") %>%
            group_by(Colors, Player) %>%
            summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
            filter(Won_Games >= 1) %>%

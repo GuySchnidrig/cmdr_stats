@@ -72,7 +72,8 @@ deck_list <- data %>%
 # Add right api path and ending
 deck_list$Deck_Link <- deck_list$Deck_Link %>%
   str_replace(.,"decks", "api/decks") %>%
-  gsub("#.*", "", .) 
+  str_replace(.,"www.", "") %>%
+  gsub("#.*", "", .)
 
 deck_list <- deck_list %>%
   mutate(Deck_Link_clean = paste0(Deck_Link,"/")) %>%

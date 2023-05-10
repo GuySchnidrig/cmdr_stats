@@ -8,8 +8,10 @@ output:
     vertical_layout: fill
 ---
 
-```{r global,, setup, include = FALSE, echo = FALSE, warning = FALSE}
+```{r global, setup, include = FALSE, echo = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# Load Libraries
 library(tidyverse)
 library(plotly)
 library(readxl)
@@ -20,7 +22,9 @@ library(jsonlite)
 library(httr)
 library(data.table)
 library(dtplyr)
+library(googlesheets4)
 
+# Misc
 Sys.setenv(LANG = "en")
 rm(list=ls())
 gc()
@@ -28,29 +32,19 @@ set.seed(42)
 options(scipen = 999,
         dplyr.summarise.inform = FALSE)
 
-# Set WD
-dir_path_primary <- "G:/Meine Ablage/MTG/cmdr_stats"
-dir_path_fallback <- "G:/My Drive/MTG/cmdr_stats"
+# Authenticate using token. 
+gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 
-# attempt to set the working directory to the primary file path
-tryCatch(
-  {
-    setwd(dir_path_primary)
-    knitr::opts_knit$set(dir_path_primary)
-  },
-  error = function(e) {
-    # if an error occurs, set the working directory to the fallback file path
-    message("An error occurred while setting the primary working directory: ", conditionMessage(e))
-    message("Setting the fallback working directory instead.")
-    setwd(dir_path_fallback)
-    knitr::opts_knit$set(dir_path_fallback)
-  }
-)
+# Write to sheet
+#ss <- gs4_get("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
+#sheet_append(ss, data.frame(time=Sys.time()))
 
-# Read Data
-data <- read_excel("cmdr.xlsx") %>%
-  as_tibble()
+data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 
+```
+
+
+```{r global, setup, include = FALSE, echo = FALSE, warning = FALSE}
 # Set Deck ID
 data <- data %>%
   group_by(Deck_Link) %>%

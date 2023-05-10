@@ -44,7 +44,7 @@ data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTc
 ```
 
 
-```{r global, setup, include = FALSE, echo = FALSE, warning = FALSE}
+```{r data setup, include = FALSE, echo = FALSE, warning = FALSE}
 # Set Deck ID
 data <- data %>%
   group_by(Deck_Link) %>%

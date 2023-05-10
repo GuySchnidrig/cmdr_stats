@@ -298,13 +298,26 @@ Column {data-width=350}
 Column {data-width=350}
 -----------------------------------------------------------------------
 ```{r, echo=FALSE}
-decks_guy <- data %>%
-  filter(Player == "Guy") %>%
-  select(Deck_ID)
+decks_guy <- all_decks %>%
+  filter(Player == "Guy") 
 
 
-ggplotly(commander_decks$`https://archidekt.com/api/decks/2564814/` %>%
-  filter(cmc > 0, ) %>%
+ggplotly(decks_guy %>%
+  filter(cmc > 0) %>%
+  ggplot(aes(x = cmc)) +
+  geom_histogram(binwidth = 1, fill = "steelblue") +
+  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
+  theme_bw())
+```
+
+# Elie {data-navmenu="Player Profiles "} 
+```{r, echo=FALSE}
+decks_elie <- all_decks %>%
+  filter(Player == "Elie")
+
+
+ggplotly(decks_elie %>%
+  filter(cmc >= 0) %>%
   ggplot(aes(x = cmc)) +
   geom_histogram(binwidth = 1, fill = "steelblue") +
   scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +

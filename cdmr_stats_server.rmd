@@ -1,11 +1,12 @@
 ---
-title: "cmdr stats"
+title: "cmdr stats server"
 author: "Guy Schnidrig"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+runtime: shiny
 ---
 
 ```{r global, setup, include = FALSE, echo = FALSE, warning = FALSE}
@@ -23,6 +24,10 @@ library(httr)
 library(data.table)
 library(dtplyr)
 library(googlesheets4)
+library(rsconnect)
+
+# Run server
+# rsconnect::deployApp('G:/Meine Ablage/MTG/cmdr_stats/cdmr_stats_server.rmd')
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -39,6 +44,7 @@ gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 #ss <- gs4_get("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 #sheet_append(ss, data.frame(time=Sys.time()))
 
+# Game Data
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 
 ```

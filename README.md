@@ -1,6 +1,8 @@
 # cmdr stats 
 Author: Guy Schnidrig
 
+https://guy-schnidrig.shinyapps.io/cdmr_stats_server/
+
 This repository contains code and data for analyzing statistics of games played with Commander decks.
 
 ![alt text](https://raw.githubusercontent.com/GuySchnidrig/cmdr_stats/main/github_dashboard.PNG)

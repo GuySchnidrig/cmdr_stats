@@ -24,9 +24,10 @@ library(httr)
 library(data.table)
 library(dtplyr)
 library(googlesheets4)
-library(rsconnect)
 
-# Run server
+
+# Run server in console
+# library(rsconnect)
 # rsconnect::deployApp('G:/Meine Ablage/MTG/cmdr_stats/cdmr_stats_server.rmd')
 
 # Misc
@@ -67,7 +68,8 @@ data$Date <- lubridate::dmy(data$Date)
 # Get Deck links
 deck_list <- data %>%
   filter(grepl("archidekt", Deck_Link)) %>%
-  select(Deck_Link, Deck_ID)
+  select(Deck_Link, Deck_ID) %>%
+  distinct(Deck_Link, Deck_ID)
 
 # Add right api path and ending
 deck_list$Deck_Link <- deck_list$Deck_Link %>%

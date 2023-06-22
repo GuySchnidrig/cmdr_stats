@@ -111,6 +111,10 @@ deck_infos <- data %>%
 
 all_decks<- left_join(all_decks, deck_infos, by = "Deck_Link_clean")
 
+all_decks <- all_decks %>%
+  group_by(Player) %>%
+  mutate(Number_of_decks = length(unique(Deck_ID)))
+
 DT::datatable(all_decks, filter = 'top')
 ```
 
@@ -172,12 +176,21 @@ data %>%
 ### Mana Value Distribution of all decks played
 
 ```{r,echo=FALSE}
-ggplotly(all_decks %>%
+deck_cmc <- all_decks %>%
+  group_by(Player, cmc, Number_of_decks) %>%
+  summarize(Average_Number_Spells = (mean(n_distinct(name))))
+
+
+deck_cmc_average <- deck_cmc %>%
+  summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks)
+  
+
+ggplotly(deck_cmc_average %>%
   filter(cmc > 0) %>%
-  ggplot(aes(x = cmc, fill = Player)) +
-  geom_histogram(binwidth = 1, position = "dodge") +
-  scale_x_continuous(breaks = seq(0, 12, 1)) +
-  theme_bw())
+  ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
+  geom_bar(position="dodge", stat="identity") + 
+    facet_wrap(~Player) + 
+    theme_bw() )
   
 ```
 

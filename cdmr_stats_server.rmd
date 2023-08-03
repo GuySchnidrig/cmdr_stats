@@ -4,8 +4,10 @@ author: "Guy Schnidrig"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   flexdashboard::flex_dashboard:
+    theme: flatly
     orientation: columns
     vertical_layout: fill
+
 runtime: shiny
 ---
 
@@ -131,6 +133,7 @@ ggplotly(data %>%
            ggplot(aes(x =reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
            geom_bar(stat='identity') +
            labs(x = "", y = "Games_Played") + 
+           scale_color_brewer(palette = 'Set1') +
            theme_bw())
 ```
 ### Total Games Won

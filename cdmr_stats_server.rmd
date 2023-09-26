@@ -26,6 +26,7 @@ library(httr)
 library(data.table)
 library(dtplyr)
 library(googlesheets4)
+library(RColorBrewer)
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -44,6 +45,11 @@ gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 
 # Game Data
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
+
+color_list <- c("#fd7f6f", "#7eb0d5", "#b2e061", "#bd7ebe", "#ffb55a", "#ffee65", "#beb9db", "#8bd3c7")
+player_color_mapping <- data.frame(Player = unique(data$Player), Color = color_list)
+
+
 
 ```
 
@@ -124,28 +130,33 @@ DT::datatable(all_decks, filter = 'top')
 
 Column {data-width=650}
 -----------------------------------------------------------------------
-### Normal Games played
+### Games played
 ```{r, echo = FALSE}
-ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
-           group_by(Player) %>%
-           summarise(Played_Games = length(Game_ID)) %>%
-           ggplot(aes(x =reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
-           geom_bar(stat='identity') +
-           labs(x = "", y = "Games_Played") + 
-           scale_color_brewer(palette = 'Set1') +
-           theme_bw())
+ggplotly(
+  data %>%
+  filter(Game_Type != "Draft") %>%
+  group_by(Player) %>%
+  summarise(Played_Games = length(Game_ID)) %>%
+  ggplot(aes(x = reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
+  geom_bar(stat = "identity") +
+  labs(x = "", y = "Games Played") + 
+  scale_fill_manual(values = player_color_mapping$Color) +
+  theme_bw()
+) 
 ```
 ### Total Games Won
 ```{r, echo = FALSE}
 data %>%
   filter(Game_Type != "Draft") %>%
   filter(Win >= 1) %>%
-  plot_ly(., labels = ~Player, values = ~Win, type = 'pie') %>% 
+  plot_ly(., 
+          labels = ~Player, 
+          values = ~Win, 
+          type = 'pie') %>%  
           layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                  yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-```
 
+```
 
 
 Row
@@ -169,7 +180,7 @@ data %>%
   filter(Game_Type != "Draft") %>%
   group_by(Commander) %>%
   summarise(`Games played` = length(Commander),
-            Wins = sum(Win)) %>%
+            Wins = sum(Win, na.rm = T)) %>%
   arrange(desc(`Games played`)) %>%
   slice(1:5) %>%
   knitr::kable()
@@ -192,19 +203,12 @@ ggplotly(deck_cmc_average %>%
   filter(cmc > 0) %>%
   ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
   geom_bar(position="dodge", stat="identity") + 
+    scale_fill_manual(values = player_color_mapping$Color) +
     facet_wrap(~Player) + 
-    theme_bw() )
-  
-```
+    scale_x_continuous(breaks = seq(min(deck_cmc_average$cmc, na.rm = T), max(deck_cmc_average$cmc, na.rm = T), by = 1)) +
+    theme_bw())
 
-```{r,echo=FALSE}
-ggplotly(all_decks %>%
-  filter(cmc > 0) %>%
-  ggplot(aes(x = cmc)) +
-  geom_histogram(binwidth = 1, fill = "steelblue") +
-  scale_x_continuous(breaks = seq(0, 12, 1)) +
-  theme_bw())
-  
+
 ```
 
 # Data
@@ -213,7 +217,7 @@ ggplotly(all_decks %>%
 DT::datatable(data, filter = 'top')
 
 ```
-# Games played {data-navmenu="Graphs"}
+# Games played{data-navmenu="Graphs"}
 ```{r, echo = FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%  
@@ -221,13 +225,13 @@ ggplotly(data %>%
            summarise(`Played Games` = length(Game_ID)) %>%
            ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
            geom_bar(stat='identity') +
+           scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games Played") +
            theme_bw())
  
 ```
 
-
-# Total Games Played By Color and Player {data-navmenu="Graphs"}
+# Total Games Played By Color and Player{data-navmenu="Graphs"}
 ```{r, echo=FALSE, warning=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -235,12 +239,13 @@ ggplotly(data %>%
            summarise(Played_Games = length(Game_ID)) %>%
            ggplot(aes(x = reorder(Commander,-Played_Games), y = Played_Games, fill = Player)) +
            geom_bar(stat='identity') +
+           scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games_Played") +
            theme_bw() +
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 ```
 
-# Total Games Played By Color {data-navmenu="Graphs"}
+# Total Games Played By Color{data-navmenu="Graphs"}
 ```{r TGPCol, echo=FALSE, warning=FALSE}
 ggplotly(data %>%
             filter(Game_Type != "Draft") %>%
@@ -248,11 +253,13 @@ ggplotly(data %>%
             summarise(Played_Games = length(Game_ID)) %>%
             ggplot(aes(x = reorder(Colors,-Played_Games), y = Played_Games, fill = Player)) +
             geom_bar(stat='identity') +
+            scale_fill_manual(values = player_color_mapping$Color) +
             labs(x = "", y = "Games_Played") +
-            theme_bw())
-```
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))) 
+``` 
 
-# Total Games Won By Player {data-navmenu="Graphs"}
+# Total Games Won By Player{data-navmenu="Graphs"}
 ```{r TGW, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -260,24 +267,28 @@ ggplotly(data %>%
   summarise(Won_games = sum(Win, na.rm = TRUE)) %>%
   ggplot(aes(x = reorder(Player,-Won_games), y = Won_games, fill = Player)) +
   geom_bar(stat='identity') +
-  labs(x = "", y = "Games_Won") +
+  scale_fill_manual(values = player_color_mapping$Color) +
+  labs(x = "", y = "Games Won") +
   theme_bw())
 ```
 
 
-# Relative Games Won By Player {data-navmenu="Graphs"} 
+# Relative Games Won By Player{data-navmenu="Graphs"} 
 ```{r RGW, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
   group_by(Player) %>%
-  summarise(Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
+  summarise(
+    gl = length(unique(Game_ID)),
+Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   ggplot(aes(x = reorder(Player,-Won_games_relative), y = Won_games_relative, fill = Player)) +
   geom_bar(stat='identity') +
-  labs(x = "", y = "Games_Won(Relative)") +
+  scale_fill_manual(values = player_color_mapping$Color) +
+  labs(x = "", y = "Games Won (Relative)") +
   theme_bw())
 ```
 
-# Total Games Won By Commander And Player {data-navmenu="Graphs"} 
+# Total Games Won By Commander And Player{data-navmenu="Graphs"} 
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -286,13 +297,14 @@ ggplotly(data %>%
            filter(Won_Games >= 1) %>%
            ggplot(aes(x = reorder(Commander,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat='identity') +
+           scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games_Won") +
            theme_bw() + 
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 
 ```
 
-# Total Games Won By Color And Player {data-navmenu="Graphs"} 
+# Total Games Won By Color And Player{data-navmenu="Graphs"} 
 ```{r Colorwin, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -301,13 +313,14 @@ ggplotly(data %>%
            filter(Won_Games >= 1) %>%
            ggplot(aes(x = reorder(Colors,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat = "identity") +
+           scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games_Won") +
            theme_bw() + 
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 
 ```
 
-# Guy {data-navmenu="Player Profiles "} 
+# Guy{data-navmenu="Player Profiles"} 
 Column {data-width=350}
 -----------------------------------------------------------------------
 ```{r, echo=FALSE}
@@ -329,7 +342,7 @@ ggplotly(decks_guy %>%
   theme_bw())
 ```
 
-# Elie {data-navmenu="Player Profiles "} 
+# Elie{data-navmenu="Player Profiles"} 
 ```{r, echo=FALSE}
 decks_elie <- all_decks %>%
   filter(Player == "Elie")

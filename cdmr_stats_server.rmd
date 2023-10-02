@@ -27,6 +27,7 @@ library(data.table)
 library(dtplyr)
 library(googlesheets4)
 library(RColorBrewer)
+library(png)
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -127,9 +128,9 @@ DT::datatable(all_decks, filter = 'top')
 ```
 
 # Dashboard
-
 Column {data-width=650}
 -----------------------------------------------------------------------
+
 ### Games played
 ```{r, echo = FALSE}
 ggplotly(
@@ -144,6 +145,7 @@ ggplotly(
   theme_bw()
 ) 
 ```
+
 ### Total Games Won
 ```{r, echo = FALSE}
 data %>%
@@ -158,9 +160,9 @@ data %>%
 
 ```
 
-
 Row
 -----------------------------------------------------------------------
+
 ### Statistics
 
 ```{r, echo = FALSE}
@@ -186,7 +188,6 @@ data %>%
   knitr::kable()
 ```
 
-
 ### Mana Value Distribution of all decks played
 
 ```{r,echo=FALSE}
@@ -211,13 +212,18 @@ ggplotly(deck_cmc_average %>%
 
 ```
 
-# Data
 
+
+# Data
 ```{r, echo=FALSE}
 DT::datatable(data, filter = 'top')
-
 ```
-# Games played{data-navmenu="Graphs"}
+
+
+# Graphs
+Column {data-width=650}
+-----------------------------------------------------------------------
+### Games played
 ```{r, echo = FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%  
@@ -231,49 +237,7 @@ ggplotly(data %>%
  
 ```
 
-# Total Games Played By Color and Player{data-navmenu="Graphs"}
-```{r, echo=FALSE, warning=FALSE}
-ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
-           group_by(Commander, Player) %>%
-           summarise(Played_Games = length(Game_ID)) %>%
-           ggplot(aes(x = reorder(Commander,-Played_Games), y = Played_Games, fill = Player)) +
-           geom_bar(stat='identity') +
-           scale_fill_manual(values = player_color_mapping$Color) +
-           labs(x = "", y = "Games_Played") +
-           theme_bw() +
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
-```
-
-# Total Games Played By Color{data-navmenu="Graphs"}
-```{r TGPCol, echo=FALSE, warning=FALSE}
-ggplotly(data %>%
-            filter(Game_Type != "Draft") %>%
-            group_by(Colors, Player) %>%
-            summarise(Played_Games = length(Game_ID)) %>%
-            ggplot(aes(x = reorder(Colors,-Played_Games), y = Played_Games, fill = Player)) +
-            geom_bar(stat='identity') +
-            scale_fill_manual(values = player_color_mapping$Color) +
-            labs(x = "", y = "Games_Played") +
-            theme_bw() +
-            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))) 
-``` 
-
-# Total Games Won By Player{data-navmenu="Graphs"}
-```{r TGW, echo=FALSE}
-ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
-  group_by(Player) %>%
-  summarise(Won_games = sum(Win, na.rm = TRUE)) %>%
-  ggplot(aes(x = reorder(Player,-Won_games), y = Won_games, fill = Player)) +
-  geom_bar(stat='identity') +
-  scale_fill_manual(values = player_color_mapping$Color) +
-  labs(x = "", y = "Games Won") +
-  theme_bw())
-```
-
-
-# Relative Games Won By Player{data-navmenu="Graphs"} 
+### Relative Games Won By Player
 ```{r RGW, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -287,8 +251,10 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   labs(x = "", y = "Games Won (Relative)") +
   theme_bw())
 ```
+Row
+-----------------------------------------------------------------------
 
-# Total Games Won By Commander And Player{data-navmenu="Graphs"} 
+### Total Games Won By Commander And Player
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -304,7 +270,7 @@ ggplotly(data %>%
 
 ```
 
-# Total Games Won By Color And Player{data-navmenu="Graphs"} 
+### Total Games Won By Color And Player
 ```{r Colorwin, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -317,41 +283,79 @@ ggplotly(data %>%
            labs(x = "", y = "Games_Won") +
            theme_bw() + 
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
+```
+
+# Player
+Column {.sidebar}
+--------------------------------------------------
+Hey there! 😄 Before we continue, I need a bit of your magic to complete the spell. 
+Could you kindly whisper your enchanting name into the digital cauldron below
+```{r slider input, echo=FALSE}
+selectInput(
+  "Player", label = "Player:",
+  choices = c(unique(data$Player)), selected = "Aless")
+
+selectInput(
+  "Game_Type", label = "Gametype:",
+  choices = c("Normal", "With_Draft") , selected = "Normal")
 
 ```
 
-# Guy{data-navmenu="Player Profiles"} 
-Column {data-width=350}
+Column
+--------------------------------------------------
+### Stats
+```{r player stats, echo=FALSE}
+renderTable({
+  data %>%
+    filter(Player == input$Player &  Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>% 
+    summarise(`Total Games` = length(unique(Game_ID)),
+            `Unique Commanders` = length(unique(Commander)),
+            `Average Win Turn` = mean(Win_Turn, na.rm = TRUE),
+            `Most played Color` = names(which.max(table(.$Colors)))) %>% 
+    as.data.table() })
+```
+### Stats 2
+```{r player stats2, echo=FALSE}
+renderTable({ data %>% 
+  filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+  group_by(Commander) %>%
+  summarise(`Games played` = length(Commander),
+            Wins = as.integer(sum(Win, na.rm = T)),
+            Winrate = Wins / `Games played`) %>%
+  arrange(desc(`Games played`)) %>% 
+    as.data.table()})
+```
+
+Row
 -----------------------------------------------------------------------
-```{r, echo=FALSE}
+
+
+### Image
+```{r player image, echo=FALSE}
+# 
+# renderPlot({ 
+#   t <- data %>% 
+#   filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+#   group_by(Commander) %>%
+#   summarise(`Games played` = length(Commander)) %>%
+#   arrange(desc(`Games played`)) %>% 
+#   slice(1)
+#   
+#   card_name <- as.character(t[[1]])
+#   
+#   scryfall_url <- paste0("https://api.scryfall.com/cards/named?fuzzy=", URLencode(card_name))
+#   response <- GET(scryfall_url)
+#   card_info <- content(response, "parsed")
+#   image_url <- card_info$image_uris$normal
+#   download.file(image_url, destfile = "mtg_card.jpg")
+#   image <- readJPEG("mtg_card.jpg")
+# 
+#   dd <- data.frame(x = rnorm(100), y = rnorm(100))
+#   gg <- ggplot(dd, aes(x, y)) +
+#     geom_point() +
+#     annotation_custom(rasterGrob(img), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf)
+# })
+
 
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-```{r, echo=FALSE}
-decks_guy <- all_decks %>%
-  filter(Player == "Guy") 
-
-
-ggplotly(decks_guy %>%
-  filter(cmc > 0) %>%
-  ggplot(aes(x = cmc)) +
-  geom_histogram(binwidth = 1, fill = "steelblue") +
-  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
-  theme_bw())
-```
-
-# Elie{data-navmenu="Player Profiles"} 
-```{r, echo=FALSE}
-decks_elie <- all_decks %>%
-  filter(Player == "Elie")
-
-
-ggplotly(decks_elie %>%
-  filter(cmc >= 0) %>%
-  ggplot(aes(x = cmc)) +
-  geom_histogram(binwidth = 1, fill = "steelblue") +
-  scale_x_continuous(breaks = seq(0, length(commander_decks$`https://archidekt.com/api/decks/2564814/`$cmc), 1)) +
-  theme_bw())
-```

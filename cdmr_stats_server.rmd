@@ -85,7 +85,8 @@ deck_list$Deck_Link <- deck_list$Deck_Link %>%
 
 deck_list <- deck_list %>%
   mutate(Deck_Link_clean = paste0(Deck_Link,"/")) %>%
-  select(-Deck_Link)
+  select(-Deck_Link) %>% 
+  distinct()
 
 data <- left_join(data, deck_list, by = "Deck_ID") 
 

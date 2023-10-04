@@ -44,6 +44,8 @@ gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 #ss <- gs4_get("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 #sheet_append(ss, data.frame(time=Sys.time()))
 
+
+
 # Game Data
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 

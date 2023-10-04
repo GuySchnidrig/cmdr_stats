@@ -5,7 +5,7 @@ account: kqqqff-guy-schnidrig
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9093992
-bundleId: 7763776
+bundleId: 7763842
 url: https://guy-schnidrig.shinyapps.io/cdmr_stats_server/
-when: 1696456726.70269
-lastSyncTime: 1696456726.7027
+when: 1696457769.04988
+lastSyncTime: 1696457769.04989

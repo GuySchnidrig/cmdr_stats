@@ -28,6 +28,7 @@ library(dtplyr)
 library(googlesheets4)
 library(RColorBrewer)
 library(png)
+library(broom)
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -95,20 +96,27 @@ res_list <- lapply(deck_list$Deck_Link_clean, httr::GET)
 json_text_list <- lapply(res_list, content, as = "text", encoding = "UTF-8") 
 json_data_list <- lapply(json_text_list, fromJSON)
 
+
 quantity_list <- lapply(json_data_list, function(i) {
   x = i$cards$quantity 
   z = i$cards$card$oracleCard$cmc
   g = i$cards$card$oracleCard$salt
   p = i$cards$card$prices$tcg
   n = i$cards$card$oracleCard$name
+  c = i$cards$card$oracleCard$defaultCategory
+  t = i$cards$card$oracleCard$types
+  s = i$cards$card$oracleCard$superTypes
   d = i$name
-  name <- tibble(d,n,x,z,g,p) %>%
+  name <- tibble(d,n,x,z,g,p,t,s,c) %>%
   rename(deck_name = d,
          card_name = n,
          Quantity = x,
          cmc = z,
          salt = g,
-         price = p)})
+         price = p,
+         type = t,
+         super_type = s,
+         category = c)})
 
 commander_decks <- quantity_list
 
@@ -133,6 +141,52 @@ all_decks_join <- all_decks_join %>%
   mutate(Number_of_decks = length(unique(Deck_ID))) %>% 
   ungroup()
 
+
+# Handle Types
+all_decks_join <- all_decks_join %>% 
+  mutate(basic_land = case_when(super_type == "Basic" & type == "Land" ~ 1 ,
+                                TRUE ~ 0))
+# Split types
+all_decks_join <- all_decks_join %>%
+  separate(type, into = c("type_1", "type_2"), sep = " ", fill = "right")
+  
+# Define the pattern you want to remove
+pattern_1 = 'c\\("'
+pattern_2 = '\",'
+pattern_3 = '\"'
+pattern_4 = '\\)'
+
+# Remove the pattern 
+all_decks_join$type_1 <- gsub(pattern_1, '', all_decks_join$type_1)
+all_decks_join$type_1 <- gsub(pattern_2, '', all_decks_join$type_1)
+all_decks_join$type_2 <- gsub(pattern_3, '', all_decks_join$type_2)
+all_decks_join$type_2 <- gsub(pattern_4, '', all_decks_join$type_2)
+
+# Make regression data frame
+deck_summary <- all_decks_join %>% 
+  group_by(Deck_ID, Player) %>% 
+  summarise(Average_cmc = mean(cmc[cmc != 0], na.rm = T),
+            Salt_Score = sum(salt, na.rm = T),
+            Artifacts = sum(Quantity[type_1 == "Artifact" | type_2  == "Artifact"], na.rm = T),
+            Creatures = sum(Quantity[type_1 == "Creature" | type_2  == "Creature"], na.rm = T),
+            Ramp = sum(Quantity[category == "Ramp"], na.rm = T),
+            Draw = sum(Quantity[category == "Draw"], na.rm = T),
+            Removal = sum(Quantity[category == "Removal"], na.rm = T),
+            Protection = sum(Quantity[category == "Protection"], na.rm = T),
+            Tutor = sum(Quantity[category == "Tutor"], na.rm = T),
+            Finisher = sum(Quantity[category == "Finisher"], na.rm = T),
+            Basic_lands = sum(Quantity[basic_land == 1], na.rm = T),
+            Deck_price = sum(price, na.rm = T))
+
+# Join deck summary
+data <- left_join(data, deck_summary, by = join_by(Player, Deck_ID))
+
+# Fill up Win turn
+data <- data %>% 
+  group_by(Game_ID) %>% 
+  fill(Win_Turn, .direction = "updown") %>% 
+  ungroup()
+
 ```
 
 # Dashboard
@@ -150,8 +204,10 @@ ggplotly(
   geom_bar(stat = "identity") +
   labs(x = "", y = "Games Played") + 
   scale_fill_manual(values = player_color_mapping$Color) +
-  theme_bw()
-) 
+  theme_bw()) %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
 
 ### Total Games Won
@@ -164,7 +220,10 @@ data %>%
           values = ~Win, 
           type = 'pie') %>%  
           layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                 yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+                 yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))  %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 
 ```
 
@@ -237,7 +296,10 @@ ggplotly(deck_cmc_average %>%
     scale_fill_manual(values = player_color_mapping$Color) +
     facet_wrap(~Player) + 
     scale_x_continuous(breaks = seq(min(deck_cmc_average$cmc, na.rm = T), max(deck_cmc_average$cmc, na.rm = T), by = 1)) +
-    theme_bw())
+    theme_bw())  %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
 
 
@@ -266,7 +328,10 @@ ggplotly(data %>%
            geom_bar(stat='identity') +
            scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games Played") +
-           theme_bw())
+           theme_bw())  %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
  
 ```
 
@@ -282,7 +347,10 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   geom_bar(stat='identity') +
   scale_fill_manual(values = player_color_mapping$Color) +
   labs(x = "", y = "Games Won (Relative)") +
-  theme_bw())
+  theme_bw())  %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
 Row
 -----------------------------------------------------------------------
@@ -299,7 +367,10 @@ ggplotly(data %>%
            scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games_Won") +
            theme_bw() + 
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
+           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))) %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 
 ```
 
@@ -315,7 +386,10 @@ ggplotly(data %>%
            scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games_Won") +
            theme_bw() + 
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
+           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))  %>% 
+  plotly::config(displayModeBar = F) %>% 
+  plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
+  plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
 
 # Player
@@ -392,3 +466,78 @@ Row
 
 ```
 
+
+# Regression
+
+Column
+-----------------------------------------------------------------------
+### Model 1
+```{r regression_1, echo=FALSE}
+data_reduced_1 <- data %>% 
+  select(Win, Player, Start, Win_Turn)
+
+data_reduced_1$Win <- as.factor(data_reduced_1$Win)
+data_reduced_1$Start <- as.factor(data_reduced_1$Start)
+
+model_1 <- glm(formula = Win ~ Player + Start + Win_Turn, data = data_reduced_1, family = binomial)
+
+tidy(model_1) %>%
+  knitr::kable()
+
+glance(model_1) %>%
+  knitr::kable()
+
+```
+
+### Model 2
+```{r regression_2, echo=FALSE}
+data_reduced_2 <- data %>% 
+  select(Win, Player, Start, Win_Turn, Average_cmc, Salt_Score, Artifacts, Creatures,
+         Ramp, Draw, Removal, Protection, Tutor, Finisher, Basic_lands, Deck_price) %>% 
+  drop_na
+
+data_reduced_2$Win <- as.factor(data_reduced_2$Win)
+
+data_reduced_2 <- data_reduced_2 %>% 
+  mutate_if(is.numeric, scale)
+
+model_2 <- glm(formula = Win ~ Player + Start + Win_Turn + Average_cmc + Salt_Score +
+                 Artifacts + Creatures + Ramp + Draw + Removal + Protection + Tutor + 
+                 Finisher + Basic_lands + Deck_price, data = data_reduced_2, family = binomial)
+
+tidy(model_2)%>%
+  knitr::kable()
+
+glance(model_2) %>%
+  knitr::kable()
+```
+
+Row
+-----------------------------------------------------------------------
+### Model 1 Odds
+```{r odds, echo=FALSE}
+odds_ratios <- exp(coef(model_1))
+conf_intervals <- confint(model_1)
+
+odds_table <- data.frame(
+  OddsRatio = odds_ratios,
+  LowerCI = conf_intervals[, 1],
+  UpperCI = conf_intervals[, 2]
+)
+odds_table %>%
+  knitr::kable() 
+```
+
+### Model2  Odds
+```{r odds_2, echo=FALSE}
+odds_ratios <- exp(coef(model_2))
+conf_intervals <- confint(model_2)
+
+odds_table_2 <- data.frame(
+  OddsRatio = odds_ratios,
+  LowerCI = conf_intervals[, 1],
+  UpperCI = conf_intervals[, 2]
+)
+odds_table_2 %>%
+  knitr::kable() 
+```

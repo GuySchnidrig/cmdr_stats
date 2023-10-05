@@ -164,6 +164,7 @@ all_decks_join$type_2 <- gsub(pattern_4, '', all_decks_join$type_2)
 
 # Make regression data frame
 deck_summary <- all_decks_join %>% 
+#  filter(Deck_ID == 4) %>% 
   group_by(Deck_ID, Player) %>% 
   summarise(Average_cmc = mean(cmc[cmc != 0], na.rm = T),
             Salt_Score = sum(salt, na.rm = T),
@@ -245,7 +246,7 @@ data %>%
 
 ```{r, echo = FALSE}
 most_played_card <- all_decks_join %>% 
-  filter(cmc != 0) %>% 
+  filter(cmc != 0, category != "Ramp") %>% 
   group_by(card_name) %>%
   count() %>% 
   ungroup() %>% 
@@ -254,13 +255,14 @@ most_played_card <- all_decks_join %>%
 
 
 all_decks_join %>%
-  filter(cmc != 0) %>% 
+  filter(type_1 != "Land", type_1 != "Land") %>% 
   distinct(Deck_ID, .keep_all = TRUE) %>% 
   summarise(`Average cmc` = mean(cmc),
             `Average salt score` = mean(salt),
-            `Average price (tcg)` = mean(price)) %>%
-  mutate(`1st played card` = most_played_card$card_name[1],
-         `2nd played card` = most_played_card$card_name[2],) %>%
+            `Average card price` = mean(price),
+            `expeinsive card` = max(price)) %>%
+  mutate(`1st Popular Card (nonramp)` = most_played_card$card_name[1],
+         `2nd Popular Card (nonramp)` = most_played_card$card_name[2],) %>%
   mutate(across(where(is.numeric), round, 2)) %>% 
   knitr::kable()
 ```
@@ -417,7 +419,7 @@ renderTable({
     filter(Player == input$Player &  Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>% 
     summarise(`Total Games` = length(unique(Game_ID)),
             `Unique Commanders` = length(unique(Commander)),
-            `Average Win Turn` = mean(Win_Turn, na.rm = TRUE),
+            `Average Win Turn` = mean(Win_Turn[Win == 1], na.rm = TRUE),
             `Most played Color` = names(which.max(table(.$Colors)))) %>% 
     as.data.table() })
 ```
@@ -497,6 +499,8 @@ data_reduced_2 <- data %>%
   drop_na
 
 data_reduced_2$Win <- as.factor(data_reduced_2$Win)
+data_reduced_2$Start <- as.factor(data_reduced_2$Start)
+
 
 data_reduced_2 <- data_reduced_2 %>% 
   mutate_if(is.numeric, scale)

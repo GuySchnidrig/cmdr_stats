@@ -246,7 +246,7 @@ data %>%
 
 ```{r, echo = FALSE}
 most_played_card <- all_decks_join %>% 
-  filter(cmc != 0, category != "Ramp") %>% 
+  filter(type_1 != "Land", type_1 != "Land", category != "Ramp") %>% 
   group_by(card_name) %>%
   count() %>% 
   ungroup() %>% 
@@ -256,11 +256,11 @@ most_played_card <- all_decks_join %>%
 
 all_decks_join %>%
   filter(type_1 != "Land", type_1 != "Land") %>% 
-  distinct(Deck_ID, .keep_all = TRUE) %>% 
+  #distinct(Deck_ID, .keep_all = TRUE) %>% 
   summarise(`Average cmc` = mean(cmc),
-            `Average salt score` = mean(salt),
-            `Average card price` = mean(price),
-            `expeinsive card` = max(price)) %>%
+            `Average salt score` = mean(salt, na.rm = T),
+            `Average card price` = mean(price, na.rm = T),
+            `Most expeinsive card` = max(price)) %>%
   mutate(`1st Popular Card (nonramp)` = most_played_card$card_name[1],
          `2nd Popular Card (nonramp)` = most_played_card$card_name[2],) %>%
   mutate(across(where(is.numeric), round, 2)) %>% 

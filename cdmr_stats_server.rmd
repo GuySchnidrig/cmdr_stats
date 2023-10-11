@@ -495,7 +495,7 @@ model_1 <- glm(formula = Win ~ Player + Start, data = data_reduced_1, family = "
 ```
 
 ```{r regression_1.2, echo=FALSE}
-dwplot(model_1, ci = .95, show_intercept = F,
+dwplot(model_1, show_intercept = F,
        dot_args = list(size = 3), whisker_args = list(size = 1)) +
   theme_bw() +
   xlim(-5,5) +

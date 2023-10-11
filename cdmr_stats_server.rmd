@@ -29,6 +29,7 @@ library(googlesheets4)
 library(RColorBrewer)
 library(png)
 library(broom)
+library(dotwhisker)
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -56,7 +57,6 @@ player_color_mapping <- data.frame(Player = unique(data$Player), Color = color_l
 
 
 ```
-
 
 ```{r data setup, include = FALSE, echo = FALSE, warning = FALSE}
 # Set Deck ID
@@ -191,10 +191,11 @@ data <- data %>%
 ```
 
 # Dashboard
-Column {data-width=650}
------------------------------------------------------------------------
+
+## Column {data-width="650"}
 
 ### Games played
+
 ```{r, echo = FALSE}
 ggplotly(
   data %>%
@@ -212,6 +213,7 @@ ggplotly(
 ```
 
 ### Total Games Won
+
 ```{r, echo = FALSE}
 data %>%
   filter(Game_Type != "Draft") %>%
@@ -228,8 +230,7 @@ data %>%
 
 ```
 
-Row
------------------------------------------------------------------------
+## Row
 
 ### Statistics
 
@@ -267,7 +268,6 @@ all_decks_join %>%
   knitr::kable()
 ```
 
-
 ```{r, echo = FALSE}
  data %>% 
   filter(Game_Type != "Draft") %>%
@@ -304,8 +304,6 @@ ggplotly(deck_cmc_average %>%
   plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
 
-
-
 # Game data
 
 ```{r, echo=FALSE}
@@ -313,14 +311,17 @@ DT::datatable(data, filter = 'top')
 ```
 
 # Deck data
+
 ```{r, echo=FALSE}
 DT::datatable(all_decks_join, filter = 'top')
 ```
 
 # Graphs
-Column {data-width=650}
------------------------------------------------------------------------
+
+## Column {data-width="650"}
+
 ### Games played
+
 ```{r, echo = FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%  
@@ -338,6 +339,7 @@ ggplotly(data %>%
 ```
 
 ### Relative Games Won By Player
+
 ```{r RGW, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -354,10 +356,11 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
 ```
-Row
------------------------------------------------------------------------
+
+## Row
 
 ### Total Games Won By Commander And Player
+
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -377,6 +380,7 @@ ggplotly(data %>%
 ```
 
 ### Total Games Won By Color And Player
+
 ```{r Colorwin, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
@@ -395,10 +399,11 @@ ggplotly(data %>%
 ```
 
 # Player
-Column {.sidebar}
---------------------------------------------------
-Hey there! 😄 Before we continue, I need a bit of your magic to complete the spell. 
-Could you kindly whisper your enchanting name into the digital cauldron below.
+
+## Column {.sidebar}
+
+Hey there! 😄 Before we continue, I need a bit of your magic to complete the spell. Could you kindly whisper your enchanting name into the digital cauldron below.
+
 ```{r slider input, echo=FALSE}
 selectInput(
   "Player", label = "Player:",
@@ -410,9 +415,10 @@ selectInput(
 
 ```
 
-Column
---------------------------------------------------
+## Column
+
 ### Stats
+
 ```{r player stats, echo=FALSE}
 renderTable({
   data %>%
@@ -423,7 +429,9 @@ renderTable({
             `Most played Color` = names(which.max(table(.$Colors)))) %>% 
     as.data.table() })
 ```
+
 ### Stats 2
+
 ```{r player stats2, echo=FALSE}
 renderTable({ data %>% 
   filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
@@ -435,11 +443,10 @@ renderTable({ data %>%
     as.data.table()})
 ```
 
-Row
------------------------------------------------------------------------
-
+## Row
 
 ### Image
+
 ```{r player image, echo=FALSE}
 # 
 # renderPlot({ 
@@ -468,12 +475,12 @@ Row
 
 ```
 
+# Regression Game Data
 
-# Regression
+## Column
 
-Column
------------------------------------------------------------------------
 ### Model 1
+
 ```{r regression_1, echo=FALSE}
 data_reduced_1 <- data %>% 
   select(Win, Player, Start, Win_Turn)
@@ -481,17 +488,62 @@ data_reduced_1 <- data %>%
 data_reduced_1$Win <- as.factor(data_reduced_1$Win)
 data_reduced_1$Start <- as.factor(data_reduced_1$Start)
 
-model_1 <- glm(formula = Win ~ Player + Start + Win_Turn, data = data_reduced_1, family = binomial)
+model_1 <- glm(formula = Win ~ Player + Start, data = data_reduced_1, family = "binomial")
 
-tidy(model_1) %>%
-  knitr::kable()
 
-glance(model_1) %>%
-  knitr::kable()
 
 ```
 
+```{r regression_1.2, echo=FALSE}
+dwplot(model_1, ci = .95, show_intercept = F,
+       dot_args = list(size = 3), whisker_args = list(size = 1)) +
+  theme_bw() +
+  xlim(-5,5) +
+ geom_vline(xintercept = 0,
+               colour = "grey60",
+               linetype = 2) 
+
+```
+
+### Model 1 Stats
+
+```{r, regression_1.3, echo=FALSE}
+glance(model_1) %>%
+  knitr::kable()
+```
+
+$$\text{glm(formula = } Win \sim Player + Start, \text{ data = } \text{data, family = "binomial")}$$
+
+## Row
+
+### Model 1 Summary
+
+```{r regression_1.4, echo=FALSE}
+tidy(model_1) %>%
+  knitr::kable()
+```
+
+### Model 1 Odds
+
+```{r odds, echo=FALSE}
+odds_ratios <- exp(coef(model_1))
+conf_intervals <- confint(model_1)
+
+odds_table <- data.frame(
+  OddsRatio = odds_ratios,
+  LowerCI = conf_intervals[, 1],
+  UpperCI = conf_intervals[, 2]
+)
+odds_table %>%
+  knitr::kable() 
+```
+
+# Regression Deck Data
+
+## Column
+
 ### Model 2
+
 ```{r regression_2, echo=FALSE}
 data_reduced_2 <- data %>% 
   select(Win, Player, Start, Win_Turn, Average_cmc, Salt_Score, Artifacts, Creatures,
@@ -516,23 +568,10 @@ glance(model_2) %>%
   knitr::kable()
 ```
 
-Row
------------------------------------------------------------------------
-### Model 1 Odds
-```{r odds, echo=FALSE}
-odds_ratios <- exp(coef(model_1))
-conf_intervals <- confint(model_1)
+## Row
 
-odds_table <- data.frame(
-  OddsRatio = odds_ratios,
-  LowerCI = conf_intervals[, 1],
-  UpperCI = conf_intervals[, 2]
-)
-odds_table %>%
-  knitr::kable() 
-```
+### Model2 Odds
 
-### Model2  Odds
 ```{r odds_2, echo=FALSE}
 odds_ratios <- exp(coef(model_2))
 conf_intervals <- confint(model_2)

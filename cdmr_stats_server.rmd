@@ -51,7 +51,7 @@ gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 # Game Data
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 
-color_list <- c("#fd7f6f", "#7eb0d5", "#b2e061", "#bd7ebe", "#ffb55a", "#ffee65", "#beb9db", "#8bd3c7")
+color_list <- hcl.colors(length(unique(data$Player)), "Set 2")
 player_color_mapping <- data.frame(Player = unique(data$Player), Color = color_list)
 
 
@@ -220,7 +220,8 @@ data %>%
   filter(Win >= 1) %>%
   plot_ly(., 
           labels = ~Player, 
-          values = ~Win, 
+          values = ~Win,
+          marker = list(colors = color_list),
           type = 'pie') %>%  
           layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                  yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))  %>% 

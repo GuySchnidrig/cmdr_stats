@@ -107,7 +107,9 @@ quantity_list <- lapply(json_data_list, function(i) {
   t = i$cards$card$oracleCard$types
   s = i$cards$card$oracleCard$superTypes
   d = i$name
-  name <- tibble(d,n,x,z,g,p,t,s,c) %>%
+  m = i$cards$categories
+  
+  name <- tibble(d,n,x,z,g,p,t,s,c,m) %>%
   rename(deck_name = d,
          card_name = n,
          Quantity = x,
@@ -116,7 +118,10 @@ quantity_list <- lapply(json_data_list, function(i) {
          price = p,
          type = t,
          super_type = s,
-         category = c)})
+         category = c,
+         maybe = m) %>% 
+    filter(str_detect(maybe, "Maybeboard", negate = TRUE)) # Filters out Maybeboard cards
+  })
 
 commander_decks <- quantity_list
 

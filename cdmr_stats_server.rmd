@@ -30,7 +30,9 @@ library(RColorBrewer)
 library(png)
 library(broom)
 library(dotwhisker)
-
+library(ggplot2)
+library(cowplot)
+library(magick)
 # Misc
 Sys.setenv(LANG = "en")
 rm(list=ls())
@@ -52,9 +54,13 @@ gs4_auth(cache = ".secrets", email = "g.schnidu@gmail.com")
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1yMb2ijZfeAcAVHBNJGTcnORYu4GPSBTlDTioDQkoB1c/edit#gid=1318392544")
 
 color_list <- hcl.colors(length(unique(data$Player)), "Set 2")
+
+data$color <- leaflet::colorFactor(
+  palette = color_list, domain = unique(data$Player)
+  )(data$Player)
+
+
 player_color_mapping <- data.frame(Player = unique(data$Player), Color = color_list)
-
-
 
 ```
 
@@ -220,14 +226,20 @@ ggplotly(
 ### Total Games Won
 
 ```{r, echo = FALSE}
+colors_listed = c( Elie = color_list[1], Guy = color_list[2])
+
+
+
 data %>%
   filter(Game_Type != "Draft") %>%
   filter(Win >= 1) %>%
   plot_ly(., 
           labels = ~Player, 
           values = ~Win,
-          marker = list(colors = color_list),
-          type = 'pie') %>%  
+          marker = list(colors = ~color,
+                      line = list(color = '#FFFFFF', width = 1)),
+          type = 'pie',
+          textinfo='label+percent') %>%  
           layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                  yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))  %>% 
   plotly::config(displayModeBar = F) %>% 
@@ -294,14 +306,23 @@ deck_cmc <- all_decks_join %>%
 
 
 deck_cmc_average <- deck_cmc %>%
-  summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks)
+  summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks) %>% 
+  left_join(., player_color_mapping, by = "Player")
   
 
 ggplotly(deck_cmc_average %>%
   filter(cmc > 0) %>%
   ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
   geom_bar(position="dodge", stat="identity") + 
-    scale_fill_manual(values = player_color_mapping$Color) +
+    scale_fill_manual(values = c(Aless = player_color_mapping$Color[1],
+                                 Domi  = player_color_mapping$Color[2],
+                                 Elie = player_color_mapping$Color[3],
+                                 Guy = player_color_mapping$Color[4],
+                                 Fubu = player_color_mapping$Color[5],
+                                 Lueku = player_color_mapping$Color[6],
+                                 Lucien = player_color_mapping$Color[7],
+                                 Tobi = player_color_mapping$Color[8],
+                                 Domitwo = player_color_mapping$Color[9])) +
     facet_wrap(~Player) + 
     scale_x_continuous(breaks = seq(min(deck_cmc_average$cmc, na.rm = T), max(deck_cmc_average$cmc, na.rm = T), by = 1)) +
     theme_bw())  %>% 
@@ -431,7 +452,7 @@ renderTable({
     filter(Player == input$Player &  Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>% 
     summarise(`Total Games` = length(unique(Game_ID)),
             `Unique Commanders` = length(unique(Commander)),
-            `Average Win Turn` = mean(Win_Turn[Win == 1], na.rm = TRUE),
+            `Average Win Turn` = round(mean(Win_Turn[Win == 1], na.rm = TRUE),2),
             `Most played Color` = names(which.max(table(.$Colors)))) %>% 
     as.data.table() })
 ```
@@ -451,34 +472,52 @@ renderTable({ data %>%
 
 ## Row
 
-### Image
+### Favorite Commander
+
 
 ```{r player image, echo=FALSE}
-# 
-# renderPlot({ 
-#   t <- data %>% 
-#   filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
-#   group_by(Commander) %>%
-#   summarise(`Games played` = length(Commander)) %>%
-#   arrange(desc(`Games played`)) %>% 
-#   slice(1)
-#   
-#   card_name <- as.character(t[[1]])
-#   
-#   scryfall_url <- paste0("https://api.scryfall.com/cards/named?fuzzy=", URLencode(card_name))
-#   response <- GET(scryfall_url)
-#   card_info <- content(response, "parsed")
-#   image_url <- card_info$image_uris$normal
-#   download.file(image_url, destfile = "mtg_card.jpg")
-#   image <- readJPEG("mtg_card.jpg")
-# 
-#   dd <- data.frame(x = rnorm(100), y = rnorm(100))
-#   gg <- ggplot(dd, aes(x, y)) +
-#     geom_point() +
-#     annotation_custom(rasterGrob(img), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf)
-# })
+renderPlot({
+
+    t <- data %>%
+      filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+      group_by(Commander) %>%
+      summarise(`Games played` = n()) %>%
+      arrange(desc(`Games played`)) %>%
+      slice(1)
+
+    card_name <- as.character(t[[1]])
+
+    scryfall_url <- paste0("https://api.scryfall.com/cards/named?fuzzy=", URLencode(card_name))
+    response <- httr::GET(scryfall_url)
+    card_info <- httr::content(response, "parsed")
+    image_url <- card_info$image_uris$normal
 
 
+  
+
+
+ggdraw() + 
+  draw_image(image_url) 
+})
+```
+
+### Mana Value Distribution
+
+```{r Mana Value Distribution, echo=FALSE}
+renderPlot({
+  tryCatch({
+  ggplotly(deck_cmc_average %>%
+  filter(cmc > 0) %>%
+  filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+  ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
+  geom_bar(position="dodge", stat="identity") + 
+    scale_x_continuous(breaks = seq(1:12)) +
+    theme_bw()) 
+  }, error = function(e) {
+    # Handle the case where an error (player not in the list) occurs
+    plot(NULL)
+  })
+})
 ```
 
 # Regression Game Data

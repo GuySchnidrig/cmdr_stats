@@ -505,18 +505,13 @@ ggdraw() +
 
 ```{r Mana Value Distribution, echo=FALSE}
 renderPlot({
-  tryCatch({
+
   ggplotly(deck_cmc_average %>%
   filter(cmc > 0) %>%
   filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
   ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
   geom_bar(position="dodge", stat="identity") + 
-    scale_x_continuous(breaks = seq(1:12)) +
-    theme_bw()) 
-  }, error = function(e) {
-    # Handle the case where an error (player not in the list) occurs
-    plot(NULL)
-  })
+    theme_bw())
 })
 ```
 

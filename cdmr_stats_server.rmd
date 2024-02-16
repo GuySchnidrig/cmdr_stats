@@ -361,7 +361,7 @@ ggplotly(data %>%
            summarise(`Played Games` = length(Game_ID)) %>%
            ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
            geom_bar(stat='identity') +
-           scale_fill_manual(values = player_color_mapping$Color) +
+           scale_fill_manual(values = player_color_mapping$color) +
            labs(x = "", y = "Games Played") +
            theme_bw() +
            theme(panel.grid = element_blank()))  %>% 
@@ -383,7 +383,7 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
   filter(Won_games_relative != 0) %>% 
   ggplot(aes(x = reorder(Player,-Won_games_relative), y = Won_games_relative, fill = Player)) +
   geom_bar(stat='identity') +
-  scale_fill_manual(values = player_color_mapping$Color) +
+  scale_fill_manual(values = player_color_mapping$color) +
   labs(x = "", y = "Games Won (Relative)") +
   theme_bw() +
     theme(panel.grid = element_blank()))  %>% 
@@ -407,7 +407,7 @@ ggplotly(data %>%
            slice_head(n = 10) %>% 
            ggplot(aes(x = reorder(Commander,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat='identity') +
-           scale_fill_manual(values = player_color_mapping$Color) +
+           scale_fill_manual(values = player_color_mapping$color) +
            labs(x = "", y = "Games Won") +
            theme_bw() + 
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
@@ -431,7 +431,7 @@ ggplotly(data %>%
            slice_head(n = 10) %>% 
            ggplot(aes(x = reorder(Colors,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat = "identity") +
-           scale_fill_manual(values = player_color_mapping$Color) +
+           scale_fill_manual(values = player_color_mapping$color) +
            labs(x = "", y = "Games Won") +
            theme_bw() + 
            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),

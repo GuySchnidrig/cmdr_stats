@@ -60,9 +60,11 @@ data$color <- leaflet::colorFactor(
   palette = color_list, domain = unique(data$Player)
   )(data$Player)
 
-
-player_color_mapping <- data.frame(Player = unique(data$Player), Color = color_list)
-
+player_color_mapping <- data %>% 
+  group_by(Player) %>%
+  reframe(color = color) %>% 
+  distinct(Player, .keep_all = T) %>% 
+  ungroup()
 ```
 
 ```{r data setup, include = FALSE, echo = FALSE, warning = FALSE}
@@ -217,7 +219,7 @@ ggplotly(
   ggplot(aes(x = reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
   geom_bar(stat = "identity") +
   labs(x = "", y = "Games Played") + 
-  scale_fill_manual(values = player_color_mapping$Color) +
+  scale_fill_manual(values = player_color_mapping$color) +
   theme_bw() +
     theme(panel.grid = element_blank())) %>% 
   plotly::config(displayModeBar = F) %>% 
@@ -311,20 +313,18 @@ deck_cmc_average <- deck_cmc %>%
   summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks) %>% 
   left_join(., player_color_mapping, by = "Player")
 
-
+player.cols = c("Aless" = "#ED90A4",
+               "Elie" = "#7EBA68",
+               "Fubu" = "#1DC199",
+               "Guy" = "#00BFC8",
+               "Lueku" = "#BB9DEA",
+               "Tobi" = "#E48FD1")
+ 
 ggplotly(deck_cmc_average %>%
-  filter(cmc > 0) %>%
+  filter(cmc > 0, Player != "Lucien") %>%
   ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
   geom_bar(position="dodge", stat="identity") + 
-    scale_fill_manual(values = c(Aless = player_color_mapping$Color[1],
-                                 Domi  = player_color_mapping$Color[2],
-                                 Elie = player_color_mapping$Color[3],
-                                 Guy = player_color_mapping$Color[4],
-                                 Fubu = player_color_mapping$Color[5],
-                                 Lueku = player_color_mapping$Color[6],
-                                 Lucien = player_color_mapping$Color[7],
-                                 Tobi = player_color_mapping$Color[8],
-                                 Domitwo = player_color_mapping$Color[9])) +
+    scale_fill_manual(values = player.cols, limits = names(player.cols)) +
     facet_wrap(~Player) + 
     scale_x_continuous(breaks = seq(min(deck_cmc_average$cmc, na.rm = T), max(deck_cmc_average$cmc, na.rm = T), by = 1)) +
     labs(x = "cmc", y = "Average Number Of Spells") +

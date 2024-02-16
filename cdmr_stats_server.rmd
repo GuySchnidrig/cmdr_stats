@@ -33,6 +33,7 @@ library(dotwhisker)
 library(ggplot2)
 library(cowplot)
 library(magick)
+
 # Misc
 Sys.setenv(LANG = "en")
 rm(list=ls())
@@ -217,7 +218,8 @@ ggplotly(
   geom_bar(stat = "identity") +
   labs(x = "", y = "Games Played") + 
   scale_fill_manual(values = player_color_mapping$Color) +
-  theme_bw()) %>% 
+  theme_bw() +
+    theme(panel.grid = element_blank())) %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
@@ -258,9 +260,9 @@ data %>%
   summarise(`Total Games` = length(unique(Game_ID)),
             `Unique Players` = length(unique(Player)),
             `Unique Commanders` = length(unique(Commander)),
-            `Average Win Turn` = mean(Win_Turn, na.rm = TRUE),
-            `Most played Color` = names(which.max(table(.$Colors)))) %>%
-  knitr::kable()
+            `Average Win Turn` = round(mean(Win_Turn, na.rm = TRUE),2),
+            `Most Played Color Combo` = names(which.max(table(.$Colors)))) %>%
+  knitr::kable(align = "l")
 ```
 
 ```{r, echo = FALSE}
@@ -283,7 +285,7 @@ all_decks_join %>%
   mutate(`1st Popular Card (nonramp)` = most_played_card$card_name[1],
          `2nd Popular Card (nonramp)` = most_played_card$card_name[2],) %>%
   mutate(across(where(is.numeric), round, 2)) %>% 
-  knitr::kable()
+  knitr::kable(align = "l")
 ```
 
 ```{r, echo = FALSE}
@@ -294,7 +296,7 @@ all_decks_join %>%
             Wins = sum(Win, na.rm = T)) %>%
   arrange(desc(`Games played`)) %>%
   slice_head(n = 5)%>%
-  knitr::kable()
+  knitr::kable(align = "l")
 ```
 
 ### Mana Value Distribution of all decks played
@@ -308,7 +310,7 @@ deck_cmc <- all_decks_join %>%
 deck_cmc_average <- deck_cmc %>%
   summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks) %>% 
   left_join(., player_color_mapping, by = "Player")
-  
+
 
 ggplotly(deck_cmc_average %>%
   filter(cmc > 0) %>%
@@ -325,7 +327,10 @@ ggplotly(deck_cmc_average %>%
                                  Domitwo = player_color_mapping$Color[9])) +
     facet_wrap(~Player) + 
     scale_x_continuous(breaks = seq(min(deck_cmc_average$cmc, na.rm = T), max(deck_cmc_average$cmc, na.rm = T), by = 1)) +
-    theme_bw())  %>% 
+    labs(x = "cmc", y = "Average Number Of Spells") +
+    theme_bw() +
+    theme(panel.grid = element_blank(),
+          strip.background = element_rect(colour = "black", fill = "#e3e5d8")))  %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
@@ -358,7 +363,8 @@ ggplotly(data %>%
            geom_bar(stat='identity') +
            scale_fill_manual(values = player_color_mapping$Color) +
            labs(x = "", y = "Games Played") +
-           theme_bw())  %>% 
+           theme_bw() +
+           theme(panel.grid = element_blank()))  %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
@@ -374,11 +380,13 @@ ggplotly(data %>%
   summarise(
     gl = length(unique(Game_ID)),
 Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
+  filter(Won_games_relative != 0) %>% 
   ggplot(aes(x = reorder(Player,-Won_games_relative), y = Won_games_relative, fill = Player)) +
   geom_bar(stat='identity') +
   scale_fill_manual(values = player_color_mapping$Color) +
   labs(x = "", y = "Games Won (Relative)") +
-  theme_bw())  %>% 
+  theme_bw() +
+    theme(panel.grid = element_blank()))  %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
@@ -386,27 +394,31 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
 
 ## Row
 
-### Total Games Won By Commander And Player
+### Top 10 Games Won By Commander And Player
 
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
            filter(Game_Type != "Draft") %>%
            group_by(Commander, Player) %>%
            summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
-           filter(Won_Games >= 1) %>%
+           filter(Won_Games >= 1) %>% 
+           ungroup() %>% 
+           arrange(desc(Won_Games)) %>% 
+           slice_head(n = 10) %>% 
            ggplot(aes(x = reorder(Commander,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat='identity') +
            scale_fill_manual(values = player_color_mapping$Color) +
-           labs(x = "", y = "Games_Won") +
+           labs(x = "", y = "Games Won") +
            theme_bw() + 
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))) %>% 
+           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+                 panel.grid = element_blank())) %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
 
 ```
 
-### Total Games Won By Color And Player
+### Top 10 Games Won By Color Combo And Player
 
 ```{r Colorwin, echo=FALSE}
 ggplotly(data %>%
@@ -414,12 +426,16 @@ ggplotly(data %>%
            group_by(Colors, Player) %>%
            summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
            filter(Won_Games >= 1) %>%
+           ungroup() %>% 
+           arrange(desc(Won_Games)) %>% 
+           slice_head(n = 10) %>% 
            ggplot(aes(x = reorder(Colors,-Won_Games), y = Won_Games, fill = Player)) +
            geom_bar(stat = "identity") +
            scale_fill_manual(values = player_color_mapping$Color) +
-           labs(x = "", y = "Games_Won") +
+           labs(x = "", y = "Games Won") +
            theme_bw() + 
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))  %>% 
+           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+                 panel.grid = element_blank()))  %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
   plotly::layout(yaxis=list(fixedrange=TRUE))
@@ -429,7 +445,7 @@ ggplotly(data %>%
 
 ## Column {.sidebar}
 
-Hey there! 😄 Before we continue, I need a bit of your magic to complete the spell. Could you kindly whisper your enchanting name into the digital cauldron below.
+Choose a Player:
 
 ```{r slider input, echo=FALSE}
 selectInput(
@@ -504,15 +520,25 @@ ggdraw() +
 ### Mana Value Distribution
 
 ```{r Mana Value Distribution, echo=FALSE}
-renderPlot({
-
-  ggplotly(deck_cmc_average %>%
-  filter(cmc > 0) %>%
-  filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
-  ggplot(aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
-  geom_bar(position="dodge", stat="identity") + 
-    theme_bw())
-})
+renderPlotly({
+    filtered_data <- deck_cmc_average %>%
+      filter(cmc > 0) %>%
+      filter(Player == input$Player)
+    
+    if(nrow(filtered_data) == 0) {
+      # Return a message or a default plot if no data matches the input
+      return(ggplot() + 
+               geom_blank() + 
+               ggtitle("No data available for the selected player"))
+    } else {
+      # Proceed with plotting the filtered data
+      p <- ggplot(filtered_data, aes(y = Average_Number_Spells, x = cmc, fill = Player)) +
+        geom_bar(position="dodge", stat="identity") + 
+        scale_x_continuous(breaks = 1:12) +
+        labs(x = "cmc", y = "Average number of Spells") +
+        theme_bw()
+      ggplotly(p)
+    }})
 ```
 
 # Regression Game Data
@@ -560,7 +586,7 @@ $$\text{glm(formula = } Win \sim Player + Start, \text{ data = } \text{data, fam
 
 ```{r regression_1.4, echo=FALSE}
 tidy(model_1) %>%
-  knitr::kable()
+  knitr::kable(digits = 2)
 ```
 
 ### Model 1 Odds
@@ -575,7 +601,7 @@ odds_table <- data.frame(
   UpperCI = conf_intervals[, 2]
 )
 odds_table %>%
-  knitr::kable() 
+  knitr::kable(digits = 2) 
 ```
 
 # Regression Deck Data
@@ -595,17 +621,18 @@ data_reduced_2$Start <- as.factor(data_reduced_2$Start)
 
 
 data_reduced_2 <- data_reduced_2 %>% 
-  mutate_if(is.numeric, scale)
+  mutate_if(is.numeric, scale) %>% 
+  filter(Player != "Lucien")
 
 model_2 <- glm(formula = Win ~ Player + Start + Win_Turn + Average_cmc + Salt_Score +
                  Artifacts + Creatures + Ramp + Draw + Removal + Protection + Tutor + 
                  Finisher + Basic_lands + Deck_price, data = data_reduced_2, family = binomial)
 
 tidy(model_2)%>%
-  knitr::kable()
+  knitr::kable(digits = 2)
 
 glance(model_2) %>%
-  knitr::kable()
+  knitr::kable(digits = 2)
 ```
 
 ## Row
@@ -622,5 +649,5 @@ odds_table_2 <- data.frame(
   UpperCI = conf_intervals[, 2]
 )
 odds_table_2 %>%
-  knitr::kable() 
+  knitr::kable(digits = 2) 
 ```

@@ -33,7 +33,6 @@ library(dotwhisker)
 library(ggplot2)
 library(cowplot)
 library(magick)
-library(purrr)
 
 # Misc
 Sys.setenv(LANG = "en")

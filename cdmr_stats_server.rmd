@@ -128,9 +128,11 @@ quantity_list <- lapply(json_data_list, function(i) {
          type = t,
          super_type = s,
          category = c,
-         maybe = m) %>% 
-    filter(str_detect(maybe, "Maybeboard", negate = TRUE)) # Filters out Maybeboard cards
+         maybe = m)  %>%
+    filter(!str_detect(m, "Maybeboard"))
   })
+
+quantity_list
 
 commander_decks <- quantity_list
 

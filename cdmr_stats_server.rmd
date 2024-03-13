@@ -33,6 +33,7 @@ library(dotwhisker)
 library(ggplot2)
 library(cowplot)
 library(magick)
+library(purrr)
 
 # Misc
 Sys.setenv(LANG = "en")
@@ -105,7 +106,7 @@ res_list <- lapply(deck_list$Deck_Link_clean, httr::GET)
 json_text_list <- lapply(res_list, content, as = "text", encoding = "UTF-8") 
 json_data_list <- lapply(json_text_list, fromJSON)
 
-
+counter <- 1
 quantity_list <- lapply(json_data_list, function(i) {
   x = i$cards$quantity 
   z = i$cards$card$oracleCard$cmc
@@ -117,7 +118,7 @@ quantity_list <- lapply(json_data_list, function(i) {
   s = i$cards$card$oracleCard$superTypes
   d = i$name
   m = i$cards$categories
-  
+  counter <<- counter + 1
   name <- tibble(d,n,x,z,g,p,t,s,c,m) %>%
   rename(deck_name = d,
          card_name = n,
@@ -129,18 +130,15 @@ quantity_list <- lapply(json_data_list, function(i) {
          super_type = s,
          category = c,
          maybe = m)  %>%
-    filter(!str_detect(m, "Maybeboard"))
+    filter(!str_detect(m, "Maybeboard")) %>% 
+  mutate(Deck_Link_clean = deck_list$Deck_Link_clean[counter])
   })
-
-quantity_list
 
 commander_decks <- quantity_list
 
 # rename the list items
 names(commander_decks) <- c(deck_list$Deck_Link_clean)
 
-# add link to data frame
-commander_decks <- Map(cbind, commander_decks, Deck_Link_clean=names(commander_decks))
 
 # Create data frame with all decks
 all_decks <- data.table::rbindlist(commander_decks)

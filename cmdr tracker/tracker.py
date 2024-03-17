@@ -51,11 +51,5 @@ def change_active_player():
     active_player_index = list(players_life.keys()).index(selected_player)  # Set active player index based on selected player
     return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count)
 
-@app.route('/get_elapsed_time', methods =['GET'])
-def get_elapsed_time():
-    start_time = float(request.args.get('start_time'))
-    elapsed_time = time.time() - start_time
-    return jsonify({'elapsed_time': elapsed_time})
-
 if __name__ == '__main__':
     app.run(debug=True)

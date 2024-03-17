@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Player Names</title>
+    <style>
+        button {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        button.selected {
+            background-color: #007bff;
+            color: #fff;
+        }
+        #submitBtn {
+            display: block;
+            margin-top: 10px;
+            font-size: 18px;
+            padding: 10px 20px;
+        }
+        .player-input {
+            margin-top: 10px;
+            display: none; /* Initially hide player name input fields */
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Player Names</h1>
+    <form action="/submit_players" method="post" id="playerForm">
+        <div>
+            <button type="button" onclick="setPlayers(3)" id="btn3">3 Players</button>
+            <button type="button" onclick="setPlayers(4)" id="btn4">4 Players</button>
+        </div>
+        <div id="playerInputs"></div> <!-- Container for player name input fields -->
+        <input type="hidden" id="num_players" name="num_players" value="3">
+        <button type="submit" id="submitBtn">Submit</button>
+    </form>
+
+    <script>
+        function setPlayers(num) {
+            document.getElementById("num_players").value = num;
+            document.getElementById("btn3").classList.remove("selected");
+            document.getElementById("btn4").classList.remove("selected");
+            document.getElementById("btn" + num).classList.add("selected");
+
+            var playerInputsContainer = document.getElementById("playerInputs");
+            playerInputsContainer.innerHTML = ""; // Clear previous input fields
+
+            for (var i = 0; i < num; i++) {
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
+                input.placeholder = "Player " + (i + 1) + " name";
+                input.classList.add("player-input");
+                playerInputsContainer.appendChild(input);
+            }
+
+            // Show player name input fields
+            var playerInputs = document.querySelectorAll(".player-input");
+            playerInputs.forEach(function(input) {
+                input.style.display = "block";
+            });
+        }
+    </script>
+</body>
+</html>

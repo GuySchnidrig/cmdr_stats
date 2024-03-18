@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 # Initial life totals for 4 players
 players_life = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
+players_time = {'Player 1': 0, 'Plaer 2': 0, 'Player 3': 0, 'Player 4': 0}
 
 # Initial active player and turn count
 active_player_index = 0
@@ -30,7 +31,7 @@ def submit_players():
     player_names = [request.form[f'player{i+1}'] for i in range(num_players)]
     
     # Create a pandas DataFrame to store turn times per player
-    turn_times_df = pd.DataFrame(0, index=[0], columns=[active_player_index])
+    turn_times_df = pd.DataFrame(0, index=['turn time'], columns=[active_player_index])
     
     # time
     start_time = time.time()

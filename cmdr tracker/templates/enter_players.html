@@ -50,6 +50,7 @@
         <button type="submit" id="submitBtn">Submit</button>
     </form>
 
+
     <script>
         function setPlayers(num) {
             document.getElementById("num_players").value = num;
@@ -69,6 +70,7 @@
                 playerInput.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
                 playerInput.placeholder = "Player " + (i + 1) + " name";
                 playerInput.classList.add("player-input");
+                playerInput.setAttribute("list", "suggestions"); // Set list for autocomplete
                 playerRow.appendChild(playerInput);
 
                 var deckInput = document.createElement("input");
@@ -81,6 +83,25 @@
                 playerInputsContainer.appendChild(playerRow);
             }
         }
+
+        // Fetch suggestions from text file
+        fetch('suggestions.txt')
+            .then(response => response.text())
+            .then(text => {
+                var suggestions = text.split('\n').map(line => line.trim()).filter(line => line !== ''); // Split lines and remove empty lines
+                var datalist = document.createElement("datalist");
+                datalist.id = "suggestions";
+                for (var i = 0; i < suggestions.length; i++) {
+                    var option = document.createElement("option");
+                    option.value = suggestions[i];
+                    datalist.appendChild(option);
+                }
+                document.body.appendChild(datalist);
+            })
+            .catch(error => {
+                console.error('Error fetching suggestions:', error);
+            });
+    </script>
     </script>
 </body>
 </html>

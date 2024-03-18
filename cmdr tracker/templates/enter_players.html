@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Player Names</title>
+    <title>cmdr tracker</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         button {
             margin-right: 10px;
             font-size: 16px;
+            margin-bottom: 10px;
         }
         button.selected {
             background-color: #007bff;
@@ -19,14 +23,23 @@
             font-size: 18px;
             padding: 10px 20px;
         }
-        .player-input {
+        .player-container {
+            display: flex;
+            flex-direction: column;
             margin-top: 10px;
-            display: none; /* Initially hide player name input fields */
+        }
+        .player-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .player-input, .deck-input {
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Enter Player Names</h1>
+    <h1>cmdr tracker</h1>
+    <div>Enter Player and Decks</div>
     <form action="/submit_players" method="post" id="playerForm">
         <div>
             <button type="button" onclick="setPlayers(3)" id="btn3">3 Players</button>
@@ -45,22 +58,28 @@
             document.getElementById("btn" + num).classList.add("selected");
 
             var playerInputsContainer = document.getElementById("playerInputs");
-            playerInputsContainer.innerHTML = ""; // Clear previous input fields
+            playerInputsContainer.innerHTML = ""; // Clear previous player input fields
 
             for (var i = 0; i < num; i++) {
-                var input = document.createElement("input");
-                input.type = "text";
-                input.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
-                input.placeholder = "Player " + (i + 1) + " name";
-                input.classList.add("player-input");
-                playerInputsContainer.appendChild(input);
-            }
+                var playerRow = document.createElement("div");
+                playerRow.classList.add("player-row");
 
-            // Show player name input fields
-            var playerInputs = document.querySelectorAll(".player-input");
-            playerInputs.forEach(function(input) {
-                input.style.display = "block";
-            });
+                var playerInput = document.createElement("input");
+                playerInput.type = "text";
+                playerInput.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
+                playerInput.placeholder = "Player " + (i + 1) + " name";
+                playerInput.classList.add("player-input");
+                playerRow.appendChild(playerInput);
+
+                var deckInput = document.createElement("input");
+                deckInput.type = "text";
+                deckInput.name = "deck" + (i + 1); // Deck name input field names: deck1, deck2, ...
+                deckInput.placeholder = "Deck " + (i + 1) + " name";
+                deckInput.classList.add("deck-input");
+                playerRow.appendChild(deckInput);
+
+                playerInputsContainer.appendChild(playerRow);
+            }
         }
     </script>
 </body>

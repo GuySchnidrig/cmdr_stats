@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>cmdr tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -103,19 +105,32 @@
         }
         
         .pass-turn-form button {
-            padding: 15px 30px; /* Adjusted padding for bigger button */
+            padding: 15px 15px; /* Adjusted padding for bigger button */
             margin-right: 10px; /* Adjusted margin between buttons */
         }
+        .set_active_player_form button {
+            padding: 15px 15px; /* Adjusted padding for bigger button */
+            margin-right: 10px; /* Adjusted margin between buttons */
+        }
+
     </style>
 </head>
 <body>
     <h1>cmdr tracker</h1>
     <div id="turn">Turn: {{ turn_count }}</div> <!-- Displaying turn number -->
+    <div id="time">Elapsed Time: {{ '%.2f' | format(elapsed_time // 60) }} minutes {{ '%.2f' | format(elapsed_time % 60) }} seconds</div>
     <div class="container">
         {% for player, life in players.items() %}
         <div class="player-card {% if player == active_player %}active{% endif %}">
             <div class="player-name">{{ player }}</div>
+            
             <div class="life-total">{{ life }}</div>
+            
+            <div class="turn-times">
+                Time{{ turn_times_df.iloc[active_player_index,1] }}
+            </div>
+
+
             <div class="adjust-buttons">
                 <form action="/update_life" method="post">
                     <input type="hidden" name="player" value="{{ player }}">

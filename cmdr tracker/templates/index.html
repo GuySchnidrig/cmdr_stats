@@ -127,7 +127,7 @@
             <div class="life-total">{{ life }}</div>
             
             <div class="turn-times">
-                Time{{ turn_times_df.iloc[active_player_index,1] }}
+                Time: {{ turn_times_df.loc[player, active_player_index] }}
             </div>
 
 

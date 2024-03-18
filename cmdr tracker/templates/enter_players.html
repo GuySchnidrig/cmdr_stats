@@ -50,58 +50,61 @@
         <button type="submit" id="submitBtn">Submit</button>
     </form>
 
-
     <script>
         function setPlayers(num) {
             document.getElementById("num_players").value = num;
             document.getElementById("btn3").classList.remove("selected");
             document.getElementById("btn4").classList.remove("selected");
             document.getElementById("btn" + num).classList.add("selected");
-
+    
             var playerInputsContainer = document.getElementById("playerInputs");
             playerInputsContainer.innerHTML = ""; // Clear previous player input fields
-
+    
             for (var i = 0; i < num; i++) {
                 var playerRow = document.createElement("div");
                 playerRow.classList.add("player-row");
-
+    
                 var playerInput = document.createElement("input");
                 playerInput.type = "text";
                 playerInput.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
                 playerInput.placeholder = "Player " + (i + 1) + " name";
                 playerInput.classList.add("player-input");
-                playerInput.setAttribute("list", "suggestions"); // Set list for autocomplete
+                playerInput.setAttribute("list", "playerSuggestions"); // Set list for player name autocomplete
                 playerRow.appendChild(playerInput);
-
+    
                 var deckInput = document.createElement("input");
                 deckInput.type = "text";
                 deckInput.name = "deck" + (i + 1); // Deck name input field names: deck1, deck2, ...
                 deckInput.placeholder = "Deck " + (i + 1) + " name";
                 deckInput.classList.add("deck-input");
+                deckInput.setAttribute("list", "deckSuggestions"); // Set list for deck name autocomplete
                 playerRow.appendChild(deckInput);
-
+    
                 playerInputsContainer.appendChild(playerRow);
             }
         }
 
-        // Fetch suggestions from text file
-        fetch('suggestions.txt')
-            .then(response => response.text())
-            .then(text => {
-                var suggestions = text.split('\n').map(line => line.trim()).filter(line => line !== ''); // Split lines and remove empty lines
-                var datalist = document.createElement("datalist");
-                datalist.id = "suggestions";
-                for (var i = 0; i < suggestions.length; i++) {
-                    var option = document.createElement("option");
-                    option.value = suggestions[i];
-                    datalist.appendChild(option);
-                }
-                document.body.appendChild(datalist);
-            })
-            .catch(error => {
-                console.error('Error fetching suggestions:', error);
-            });
-    </script>
+        // Example of suggestion lists
+        var playerSuggestions = ["Guy", "Aless"];
+        var deckSuggestions = ["Deck1", "Deck2"];
+         // Populate suggestion lists
+        var playerDatalist = document.createElement("datalist");
+        playerDatalist.id = "playerSuggestions";
+        for (var i = 0; i < playerSuggestions.length; i++) {
+            var option = document.createElement("option");
+            option.value = playerSuggestions[i];
+            playerDatalist.appendChild(option);
+        }
+        document.body.appendChild(playerDatalist);
+    
+        var deckDatalist = document.createElement("datalist");
+        deckDatalist.id = "deckSuggestions";
+        for (var j = 0; j < deckSuggestions.length; j++) {
+            var option = document.createElement("option");
+            option.value = deckSuggestions[j];
+            deckDatalist.appendChild(option);
+        }
+        document.body.appendChild(deckDatalist);
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import time
 import pandas as pd
+import json
 
 app = Flask(__name__)
 
@@ -15,13 +16,23 @@ start_time = None
 turn_time = None
 start_turn_time = None
 
+# Load suggestions
+with open("player_names.txt", "r") as file:
+    player_names = file.read().splitlines()
+player_names_suggestions = player_names  # Assign the list itself, not the JSON string
+
+with open("commander_names.txt", "r") as file:
+    commander_names = file.read().splitlines()
+commander_names_suggestions = commander_names  # Assign the list itself, not the JSON string
+
 @app.route('/')
 def index():    
     return render_template('enter_players.html')
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
-    global players_life, start_time, turn_time, start_turn_time, turn_times_df, player_names, active_player_index, players_time, deck_names
+    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names
+
     num_players = int(request.form['num_players'])
     players_life = {request.form[f'player{i+1}']: 40 for i in range(num_players)}
     players_time = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
@@ -35,13 +46,14 @@ def submit_players():
     turn_time = time.time()
     start_turn_time = time.time()
     
-    #  Elapsed_time
+    # Elapsed_time
     end_time = time.time()
     elapsed_time = end_time - start_time
     
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
-                           turn_time=turn_time, players_time = players_time, player_names = player_names, active_player_index = active_player_index, deck_names = deck_names)
-
+                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names,
+                           player_names_suggestions=player_names_suggestions, commander_names_suggestions=commander_names_suggestions)
+    
 @app.route('/update_life', methods=['POST'])
 def update_life():
     global players_life, start_time, players_time, deck_names

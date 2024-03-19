@@ -17,13 +17,10 @@ turn_time = None
 start_turn_time = None
 
 # Load suggestions
-with open("player_names.txt", "r") as file:
-    player_names = file.read().splitlines()
-player_names_suggestions = player_names  # Assign the list itself, not the JSON string
-
-with open("commander_names.txt", "r") as file:
-    commander_names = file.read().splitlines()
-commander_names_suggestions = commander_names  # Assign the list itself, not the JSON string
+def read_txt_file(file_path):
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+    return [line.strip().split('\t') for line in lines]
 
 @app.route('/')
 def index():    
@@ -32,6 +29,9 @@ def index():
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
     global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names
+    
+    commander_names_suggestions = read_txt_file('C:/Users/schni/Desktop/cmdr_stats/cmdr tracker/commander_names.txt')
+    commander_names_suggestions_json = json.dumps(commander_names_suggestions) 
 
     num_players = int(request.form['num_players'])
     players_life = {request.form[f'player{i+1}']: 40 for i in range(num_players)}
@@ -52,7 +52,7 @@ def submit_players():
     
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
                            turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names,
-                           player_names_suggestions=player_names_suggestions, commander_names_suggestions=commander_names_suggestions)
+                           commander_names_suggestions_json = commander_names_suggestions_json, commander_names_suggestions=commander_names_suggestions)
     
 @app.route('/update_life', methods=['POST'])
 def update_life():

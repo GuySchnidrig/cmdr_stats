@@ -83,7 +83,7 @@
                 playerInputsContainer.appendChild(playerRow);
             }
         }
-
+        
         // Example of suggestion lists
         var playerSuggestions = ["Guy", "Aless"];
         var deckSuggestions = ["Deck1", "Deck2"];
@@ -106,5 +106,18 @@
         }
         document.body.appendChild(deckDatalist);
     </script>
+
+    <script>
+        var txtData = {{ commander_names_suggestions_json | safe}} 
+        
+        // Iterate over the first 5 names and print them
+        document.write("<h2>First 5 Names:</h2>");
+        document.write("<ul>");
+        for (var i = 0; i < 5 && i < txtData.length; i++) {
+            document.write("<li>" + txtData[i][0] + "</li>"); // Assuming the names are in the first column
+        }
+        document.write("</ul>");
+    </script>
+
 </body>
 </html>

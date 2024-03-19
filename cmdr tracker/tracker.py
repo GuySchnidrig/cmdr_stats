@@ -20,19 +20,26 @@ start_turn_time = None
 def read_txt_file(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()
-    return [line.strip().split('\t') for line in lines]
+    return [line.strip() for line in lines]
+
 
 @app.route('/')
-def index():    
-    return render_template('enter_players.html')
+def index():
+    global active_player_index, turn_count
+    
+    active_player_index = 0
+    turn_count = 1
+    
+    player_names_suggestions = read_txt_file('player_names.txt')  
+    commander_names_suggestions = read_txt_file('commander_names.txt')    
+
+    return render_template('enter_players.html', commander_names_suggestions = commander_names_suggestions, player_names_suggestions = player_names_suggestions, 
+                           active_player_index = active_player_index, turn_count = turn_count)
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
     global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names
     
-    commander_names_suggestions = read_txt_file('C:/Users/schni/Desktop/cmdr_stats/cmdr tracker/commander_names.txt')
-    commander_names_suggestions_json = json.dumps(commander_names_suggestions) 
-
     num_players = int(request.form['num_players'])
     players_life = {request.form[f'player{i+1}']: 40 for i in range(num_players)}
     players_time = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
@@ -51,8 +58,7 @@ def submit_players():
     elapsed_time = end_time - start_time
     
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
-                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names,
-                           commander_names_suggestions_json = commander_names_suggestions_json, commander_names_suggestions=commander_names_suggestions)
+                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names)
     
 @app.route('/update_life', methods=['POST'])
 def update_life():
@@ -93,7 +99,8 @@ def pass_turn():
     if active_player_index == 0:  # If it's the first player's turn again
         turn_count += 1
 
-    start_turn_time = time.time()  # Start time for the next turn
+     # Start time for the next turn
+    start_turn_time = time.time() 
  
     #  Elapsed_time
     elapsed_time = end_time - start_time
@@ -105,7 +112,7 @@ def pass_turn():
 
 @app.route('/change_active_player', methods=['POST'])
 def change_active_player():
-    global active_player_index, start_time, elapsed_time, players_time, deck_names
+    global active_player_index, start_time, elapsed_time, players_time, deck_names, start_turn_time
     
     
     # Update players' turn times
@@ -120,8 +127,11 @@ def change_active_player():
     
     selected_player = request.form.get('active_player')  # Get the selected player from the form data
     active_player_index = list(players_life.keys()).index(selected_player)  # Set active player index based on selected player
-   
-    return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,
+    
+    # Start time for the next turn
+    start_turn_time = time.time()
+    
+    return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,start_turn_time = start_turn_time,
                            elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names)
 
 if __name__ == '__main__':

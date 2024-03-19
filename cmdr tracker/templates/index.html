@@ -22,7 +22,7 @@
 
         .container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr); 
             grid-template-rows: repeat(2, 1fr);
             grid-gap: 10px;
         }
@@ -63,6 +63,15 @@
             text-align: center; /* Align the text to the center */
         }
 
+        .life-total button{
+            padding: 10px 20px; /* Adjusted padding for bigger button */
+            font-size: 42px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+            background-color: #fff;
+        }
+
         .adjust-buttons {
             display: flex;
             justify-content: space-between;
@@ -86,23 +95,31 @@
             color: #007bff; /* Highlight color for active player name */
         }
 
-        #turn {
-            grid-column: 1 / span 2; /* Spanning across both columns */
-            grid-row: 1 / span 2; /* Spanning across both rows */
-            text-align: left;
+        .active2 button {
+            color: #007bff; /* Set text color to white when active */
+        }
+        .turn {
             font-size: 25px;
             font-weight: bold;
             color: #007bff;
-        }       
-        /* Adjusting the grid layout to change visual order */
+        } 
+
         .player-card:nth-child(1) {
             grid-row: 1; 
             grid-column: 1; 
+            transform: rotate(180deg);
+        }
+
+        .player-card:nth-child(2) {
+            grid-row: 1 ; 
+            grid-column: 2;
+            transform: rotate(180deg);
         }
 
         .player-card:nth-child(2) {
             grid-row: 1; 
-            grid-column: 2; 
+            grid-column: 2;
+            transform: rotate(180deg);
         }
 
         .player-card:nth-child(3) {
@@ -118,7 +135,6 @@
         .button-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px; /* Add space between the button container and the player cards */
         }
         
         .pass-turn-form button {
@@ -133,50 +149,74 @@
     </style>
 </head>
 <body>
-    <h1>cmdr tracker</h1>
-    <div id="turn">Turn: {{ turn_count }}</div> <!-- Displaying turn number -->
-    <div id="time">Elapsed Time: {{ '%.2f' | format(elapsed_time // 60) }} minutes {{ '%.2f' | format(elapsed_time % 60) }} seconds</div>
-    <div class="container">
+       
+       <div class="container">
+        
         {% for player, life in players.items() %}
         <div class="player-card {% if player == active_player %}active{% endif %}">
             <div class="player-info">
                 <div class="player-name">{{ player }}</div>
                 <div class="deck-name">{{ deck_names[loop.index0] }}</div>
-            </div>
-            <div class="life-total">{{ life }}</div>
+        </div>
+         <form action="/change_active_player" method="POST" class="life-total {% if player == active_player %}active2{% else %}inactive{% endif %}">
+            <input type="hidden" name="active_player" value="{{ player }}">
+             <button type="submit" >{{ life }}</button>
+        </form>
 
-            <div class="adjust-buttons">
-                <form action="/update_life" method="post">
-                    <input type="hidden" name="player" value="{{ player }}">
-                    <input type="hidden" name="action" value="decrease">
-                    <button type="submit" name="amount" value="1">-1</button>
-                </form>
+        <div class="adjust-buttons">
+            <form action="/update_life" method="post">
+                <input type="hidden" name="player" value="{{ player }}">
+                <input type="hidden" name="action" value="decrease">
+                <button type="submit" name="amount" value="1">-1</button>
+            </form>
 
-                <div class="turn-times">{{ "Time: %0.2f minutes"|format(players_time[player]/60) }}</div>
+        <div class="turn-times">{{ "Time: %0.2f minutes"|format(players_time[player]/60) }}
 
-                <form action="/update_life" method="post">
-                    <input type="hidden" name="player" value="{{ player }}">
-                    <input type="hidden" name="action" value="increase">
+        </div>
+
+            <form action="/update_life" method="post">
+                <input type="hidden" name="player" value="{{ player }}">
+                <input type="hidden" name="action" value="increase">
                     <button type="submit" name="amount" value="1">+1</button>
                 </form>
             </div>
         </div>
+
         {% endfor %}
+        <div class="turn">Turn: {{ turn_count }}
+            <script>
+                function updateClock(start_time) {
+                    var currentTime = new Date();
+                    var elapsed = Math.floor((currentTime.getTime() - start_time) / 1000); // elapsed time in seconds
+                    var hours = Math.floor(elapsed / 3600);
+                    var minutes = Math.floor((elapsed % 3600) / 60);
+                    var seconds = elapsed % 60;
         
+                    // Add leading zeros if necessary
+                    hours = (hours < 10 ? "0" : "") + hours;
+                    minutes = (minutes < 10 ? "0" : "") + minutes;
+                    seconds = (seconds < 10 ? "0" : "") + seconds;
+        
+                    // Update the clock element
+                    document.getElementById('clock').innerHTML = hours + ":" + minutes + ":" + seconds;
+        
+                    // Update the clock every second
+                    setTimeout(function() {
+                        updateClock(start_time);
+                    }, 1000);
+                }
+                window.onload = function() {
+                    updateClock({{ start_time }} * 1000); // Convert start time to milliseconds
+                };
+            </script>
+        </div> 
         <div class="button-container">
             <form action="/pass_turn" method="post" class="pass-turn-form">
                 <button type="submit">Pass Turn</button>
             </form>
             
-            <form action="/change_active_player" method="POST">
-        <label for="players">Select Active Player:</label>
-        <select id="players" name="active_player">
-            {% for player, attributes in players.items() %}
-                <option value="{{ player }}" {% if player == active_player %}selected{% endif %}>{{ player }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Set Active Player</button>
-    </form>
         </div>
+        
+
 </body>
 </html>

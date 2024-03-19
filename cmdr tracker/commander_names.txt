@@ -1,84 +1,84 @@
-Dakkon Blackblade
-Kibo, Uktabi Prince
-Sharuum the Hegemon
-Marneus Calgar
-Tawnos, Urza's Apprentice
-Lathril, Blade of the Elves
-Wilhelt, the Rotcleaver
-King Macar, the Gold-Cursed
-Arcades, the Strategist
-Prosper, Tome-Bound
-K'rrik, Son of Yawgmoth
-Chatterfang, Squirrel General
-Ezuri, Renegade Leader
-Vial Smasher the Fierce
-Sythis, Harvest's Hand
-Nekusar, the Mindrazer
-Kaalia of the Vast
-Grenzo, Havoc Raiser
-Thalisse, Reverent Medium
-Miara und Gilanra
-Ich-Tekik & Malcolm
-Juri, Master of the Revue
-Archelos, Lagoon Mystic
-Kangee, Sky Warden
-Klothys, God of Destiny
+Abaddon the Despoiler
 Aesi, Tyrant of Gyre Strait
-Galea, Kindler of Hope
-Muldrotha, the Gravetide
-Orvar, the All-Form
-The Ur-Dragon
-Rakdos, Lord of Riots
-Ghave, Guru of Spores
-Marrow-Gnawer
-Jhoira, Weatherlight Captain
-God-Eternal Oketra
-Meren of Clan Nel Toth
+Arcades, the Strategist
+Archelos, Lagoon Mystic
+Arixmethes, Slumbering Isle
+Athreos, God of Passage
 Atraxa, Praetors' Voice
 Brago, King Eternal
-Leovold, Emissary of Trest
-Feldon of the Third Path
-Kasla, the Broken Halo
-Phylath, World Sculptor
-Niv-Mizzet, Parun
+Chatterfang, Squirrel General
+Cirdan the Shipwright
+Dakkon Blackblade
+Duskana, the rage mother
 Edgar Markov
-Sauron, Lord of the Rings
-Queen Marchesa
-Sigarda, Host of Herons
-Korvold, Fae-Cursed King
-Kroxa, Titan of Death's Hunger
-Sliver Overlord
-Arixmethes, Slumbering Isle
-Lord Windgrace
-Konda, Lord of Eiganjo
-Círdan the Shipwright
-Phenax, God of Deception
-Mayael the Anima
-Polukranos, World Eater
-Athreos, God of Passage
-Zada, Hedron Grinder
+Eriette of the Charmed Apple
+Ezuri, Renegade Leader
+Feldon of the Third Path
+Frodo and Sam
+Galea, Kindler of Hope
+Ghalta primal hunger
+Ghave, Guru of Spores
+Ghyrson Starn, Kelermorph
+Giada, Font of Hope
+God-Eternal Oketra
+Grenzo, Havoc Raiser
 Griselbrand
 Henzie "Toolbox" Torre
-Urza, Chief Artificer
-Frodo and Sam
-Merieke Ri Berit
-Tom Bombadil
+Ich-Tekik & Malcolm
+Jhoira, Weatherlight Captain
+Juri, Master of the Revue
+Kaalia of the Vast
+Kangee, Sky Warden
 Karlov of the Ghost Council
-Sheoldred, the Apocalypse
-The Gitrog Monster 
-Ghyrson Starn, Kelermorph
 Karn, Legacy Reforged
-Ghalta primal hunger
-Eriette of the Charmed Apple
-Abaddon the Despoiler
-Giada, Font of Hope
-Sefris of the Hidden Ways
-Yawgmoth, Thran Physician
-Narfi, Betrayer King
-Nelly Borca, Impulsive Accuser
-Pantlazta, Sun-Favored
-Merry, Warden of Isengard
-Mirko, Obsessive Theorist
-Duskana, the rage mother
-The Swarmlord
+Kasla, the Broken Halo
+Kibo, Uktabi Prince
+King Macar, the Gold-Cursed
+Klothys, God of Destiny
+Konda, Lord of Eiganjo
+Korvold, Fae-Cursed King
+Kroxa, Titan of Death's Hunger
+K'rrik, Son of Yawgmoth
+Lathril, Blade of the Elves
+Leovold, Emissary of Trest
 Liesa, Shroud of Dusk
+Lord Windgrace
+Marneus Calgar
+Marrow-Gnawer
+Mayael the Anima
+Meren of Clan Nel Toth
+Merieke Ri Berit
+Merry, Warden of Isengard
+Miara und Gilanra
+Mirko, Obsessive Theorist
+Muldrotha, the Gravetide
+Narfi, Betrayer King
+Nekusar, the Mindrazer
+Nelly Borca, Impulsive Accuser
+Niv-Mizzet, Parun
+Orvar, the All-Form
+Pantlazta, Sun-Favored
+Phenax, God of Deception
+Phylath, World Sculptor
+Polukranos, World Eater
+Prosper, Tome-Bound
+Queen Marchesa
+Rakdos, Lord of Riots
+Sauron, Lord of the Rings
+Sefris of the Hidden Ways
+Sharuum the Hegemon
+Sheoldred, the Apocalypse
+Sigarda, Host of Herons
+Sliver Overlord
+Sythis, Harvest's Hand
+Tawnos, Urza's Apprentice
+Thalisse, Reverent Medium
+The Gitrog Monster 
+The Swarmlord
+The Ur-Dragon
+Tom Bombadil
+Urza, Chief Artificer
+Vial Smasher the Fierce
+Wilhelt, the Rotcleaver
+Yawgmoth, Thran Physician
+Zada, Hedron Grinder

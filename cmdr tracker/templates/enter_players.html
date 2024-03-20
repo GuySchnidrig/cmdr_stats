@@ -44,7 +44,7 @@
             margin-bottom: 10px;
             
         }
-        .player-input, .deck-input {
+        .player-select, .deck-select{
             margin-right: 10px;
             
             background-color: #D1D0D2;
@@ -78,46 +78,77 @@
                 var playerRow = document.createElement("div");
                 playerRow.classList.add("player-row");
     
-                var playerInput = document.createElement("input");
-                playerInput.type = "text";
-                playerInput.name = "player" + (i + 1); // Player name input field names: player1, player2, ...
-                playerInput.placeholder = "Player " + (i + 1) + " name";
-                playerInput.classList.add("player-input");
-                playerInput.setAttribute("list", "playerSuggestions"); // Set list for player name autocomplete
-                playerRow.appendChild(playerInput);
+                var playerSelect = document.createElement("select");
+                playerSelect.name = "player" + (i + 1);
+                playerSelect.classList.add("player-select");
     
-                var deckInput = document.createElement("input");
-                deckInput.type = "text";
-                deckInput.name = "deck" + (i + 1); // Deck name input field names: deck1, deck2, ...
-                deckInput.placeholder = "Deck " + (i + 1) + " name";
-                deckInput.classList.add("deck-input");
-                deckInput.setAttribute("list", "deckSuggestions"); // Set list for deck name autocomplete
-                playerRow.appendChild(deckInput);
+                var playerOption = document.createElement("option");
+                playerOption.value = "";
+                playerOption.text = "Select Player " + (i + 1);
+                playerOption.disabled = true;
+                playerOption.selected = true;
+                playerSelect.appendChild(playerOption);
+    
+                for (var j = 0; j < playerSuggestions.length; j++) {
+                    var option = document.createElement("option");
+                    option.value = playerSuggestions[j];
+                    option.text = playerSuggestions[j];
+                    playerSelect.appendChild(option);
+                }
+    
+                // Add "Other" option
+                var otherOption = document.createElement("option");
+                otherOption.value = "Other";
+                otherOption.text = "Other";
+                playerSelect.appendChild(otherOption);
+    
+                playerRow.appendChild(playerSelect);
+    
+                var deckSelect = document.createElement("select");
+                deckSelect.name = "deck" + (i + 1);
+                deckSelect.classList.add("deck-select");
+    
+                var deckOption = document.createElement("option");
+                deckOption.value = "";
+                deckOption.text = "Select Deck " + (i + 1);
+                deckOption.disabled = true;
+                deckOption.selected = true;
+                deckSelect.appendChild(deckOption);
+    
+                for (var k = 0; k < deckSuggestions.length; k++) {
+                    var option = document.createElement("option");
+                    option.value = deckSuggestions[k];
+                    option.text = deckSuggestions[k];
+                    deckSelect.appendChild(option);
+                }
+    
+                playerRow.appendChild(deckSelect);
     
                 playerInputsContainer.appendChild(playerRow);
             }
         }
-        // Example of suggestion lists
+    
         var playerSuggestions = {{ player_names_suggestions | tojson }};
         var deckSuggestions = {{ commander_names_suggestions | tojson }};
-         // Populate suggestion lists
-        var playerDatalist = document.createElement("datalist");
-        playerDatalist.id = "playerSuggestions";
-        for (var i = 0; i < playerSuggestions.length; i++) {
-            var option = document.createElement("option");
-            option.value = playerSuggestions[i];
-            playerDatalist.appendChild(option);
-        }
-        document.body.appendChild(playerDatalist);
     
-        var deckDatalist = document.createElement("datalist");
-        deckDatalist.id = "deckSuggestions";
-        for (var j = 0; j < deckSuggestions.length; j++) {
-            var option = document.createElement("option");
-            option.value = deckSuggestions[j];
-            deckDatalist.appendChild(option);
-        }
-        document.body.appendChild(deckDatalist);
+        // Add event listener to detect when "Other" is selected
+        document.addEventListener('change', function(event) {
+            if (event.target.classList.contains('player-select') && event.target.value === 'Other') {
+                var manualInput = prompt('Enter player name:');
+                if (manualInput !== null) {
+                    // Find the "Other" option in the dropdown
+                    var playerSelect = event.target;
+                    var otherOption = playerSelect.querySelector('option[value="Other"]');
+                    
+                    // Update the "Other" option with the manually entered value
+                    otherOption.value = manualInput;
+                    otherOption.text = manualInput;
+                    
+                    // Optionally, select the manually entered value
+                    otherOption.selected = true;
+                }
+            }
+        });
     </script>
 
 

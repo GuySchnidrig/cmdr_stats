@@ -17,11 +17,12 @@
 
         .container {
             display: grid;
-            grid-template-columns: 55% 55% 10%; 
+            grid-template-columns:55% 55% 10%; 
             grid-template-rows: 50% 50%;
             grid-gap: 5px;
-            margin-right: auto;
-            margin-left: 0px;
+            margin-right: 5px;
+            margin-left: 5px;
+            margin-top: 10px;
         }
 
         .player-card {
@@ -159,12 +160,9 @@
             background-color: #f1e6b2;
         }
 
-        .update-winner button {
-            padding:auto;
-            background-color: #f1e6b2;
-        }
+  
         .time-font{
-            fontsize: 5px;
+            white-space: nowrap;
         }
 
     </style>
@@ -176,7 +174,7 @@
         {% for player, life in players.items() %}
         <div class="player-card {% if player == active_player %}active{% endif %}">
                 <div class="player-name">{{ player }}</div>
-                <div class="turn-times">{{ "Time: %0.2f"|format(players_time[player]/60) }}</div>
+                <div class="turn-times">{{ "Time: %0.1f"|format(players_time[player]/60) }}</div>
                 <div class="deck-name">{{ deck_names[loop.index0] }}</div>
 
                 <div>
@@ -214,56 +212,44 @@
             <form action="/pass_turn" method="post" class="pass-turn-form">
             <button type="submit">Pass Turn</button>
             
-            <div id="turn-time" class="time-font"> </div>
-            <div id="turn-time-total" class="time-font"></div>
+            <div id="turn-time" class="time-font">Turn:</div>
+            <div id="turn-time-total" class="time-font">Total:</div>
 
             </form>
         
             <!-- JavaScript to update turn time -->
             <script>
-                // Function to update elapsed time every second
-                setInterval(function () {
-                    total_time++;
-                    document.getElementById('turn-time').innerHTML = 'Time: ' + (total_time / 60).toFixed(2);
-                }, 1000);
+            // Function to update elapsed time immediately and then every second
+            function updateTime() {
+                total_time++;
+                document.getElementById('turn-time').innerHTML = 'Turn: ' + (total_time / 60).toFixed(1);
+                setTimeout(updateTime, 1000); // Schedule the next update after 1 second
+            }
 
-                var total_time = 0; // Total time elapsed since the page was loaded
-            </script>
+            var total_time = 0; // Total time elapsed since the page was loaded
 
-            <script>
-                var start_time = {{ start_time }}; // Get the start time passed from Flask
-            
-                // Function to update elapsed time every second
-                setInterval(function () {
-                    var current_time = Math.floor(Date.now() / 1000); // Get current time in seconds
-                    var elapsed_time = current_time - start_time; // Calculate elapsed time
-                    document.getElementById('turn-time-total').innerHTML = 'Time: ' + (elapsed_time / 60).toFixed(2) ;
-                }, 1000);
+            // Call updateTime function to display time immediately and then every second
+            updateTime();
+
+            var start_time = {{ start_time }}; // Get the start time passed from Flask
+
+            // Function to update elapsed time every second
+            function updateTotalTime() {
+                var current_time = Math.floor(Date.now() / 1000); // Get current time in seconds
+                var elapsed_time = current_time - start_time; // Calculate elapsed time
+                document.getElementById('turn-time-total').innerHTML = 'Total: ' + (elapsed_time / 60).toFixed(1);
+                setTimeout(updateTotalTime, 1000); // Schedule the next update after 1 second
+            }
+
+            // Call updateTotalTime function to update elapsed time every second
+            updateTotalTime();
             </script>
         </div> 
-
-        <div class="button-container">
            
-            <form action="/export_csv" method="post", class="export-csv">
-                <button type="submit" class="export-csv-btn">Export CSV</button>
-            </form>
-            
+        <form action="/end_game" method="post", class="export-csv">
+            <button type="submit" class="export-csv-btn">END</button>
+        </form>
 
-
-            <form action="/update_winner" method="post" class="update-winner">
-                <button type="submit" >Winner</button>
-
-                <label for="winner"></label>
-                
-                <select id="winner" name="winner">
-                    {% for player, life in players.items() %}
-                        <option value="{{ player }}">{{ player }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-
-        </div>
-        
 
 </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, content="height=device-height", initial-scale=1.0">
+    <title>cmdr tracker</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #68656A;
+            }
+            
+            .title{
+                color: #f1e6b2
+            }
+            button {
+                margin-right: 10px;
+                font-size: 16px;
+                margin-bottom: 10px;
+                background-color: #f1e6b2;
+            }
+            button.selected {
+                background-color: #bf624c;
+                color: #fff;
+            }
+            #submitBtn {
+                display: block;
+                margin-top: 10px;
+                font-size: 18px;
+                padding: 10px 20px;
+            }
+            .dropdown {
+                position: relative;
+                display: inline-block;
+              }
+
+            .update-winner  {
+                padding:auto;
+            }
+
+
+            .update-winner button {
+                padding:auto;
+                background-color: #f1e6b2;
+            }
+
+            .update-winner select {
+                padding:auto;
+                background-color: #f1e6b2;
+            }
+
+
+        </style>
+    </head>
+    <h1 class = "title">Good Game!</h1>
+    <body>
+
+            <div class="update-winner">
+               
+                <form action="/update_winner" method="post" class="update-winner">
+                    Congratulation to:
+    
+                    <label for="winner", class="dropdown"></label>
+                    
+                    <select id="winner" name="winner", class="dropdown">
+                        {% for player, life in players.items() %}
+                            <option value="{{ player }}">{{ player }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <button type="submit" >Winner</button>
+                </form> 
+                
+        </div>
+        <div class="button-container">
+        <form action="/export_csv" method="post", class="export-csv">
+            <button type="submit" class="export-csv-btn">Save Game Data</button>
+        </form>
+        </div>
+
+        <div class="button-container">
+            <form action="/" method="get">
+                <button type="submit">New Game</button>
+            </form>
+        </div>
+
+        
+        
+    </body>

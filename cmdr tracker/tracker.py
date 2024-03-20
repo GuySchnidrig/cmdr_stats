@@ -21,7 +21,7 @@ turn_count = 1
 start_time = None
 turn_time = None
 start_turn_time = None
-
+new_game_id = 0
 
 # Load suggestions
 def read_txt_file(file_path):
@@ -39,6 +39,24 @@ def save_csv(data):
             if idx == 0:  # Skip the first row (header)
                 continue
             csv_writer.writerow(row)
+ 
+def read_last_game_id(filename):
+    folder_path = "data/"
+    filename = os.path.join(folder_path, "game_data.csv")
+    # Initialize the variable to hold the last Game ID
+    last_game_id = None
+
+    # Read the CSV file
+    with open(filename, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        
+        # Iterate through each row in the CSV file
+        for row in reader:
+            last_game_id = int(row['Game_ID'])  # Update last Game ID for each iteration
+
+    return last_game_id
+
+
 
 @app.route('/')
 def index():
@@ -55,7 +73,7 @@ def index():
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
-    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start
+    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start, last_game_id
     
     num_players = int(request.form['num_players'])
     
@@ -87,7 +105,7 @@ def submit_players():
     players_start[player_to_change] = 1
 
     # Tests
-    print(players_start)      
+    print(new_game_id)      
     print(players_win)
     print(players_life)
     
@@ -100,9 +118,14 @@ def submit_players():
     end_time = time.time()
     elapsed_time = end_time - start_time
     
+    # Game ID
+    folder_path = "data/"
+    filename = os.path.join(folder_path, "game_data.csv")
+    last_game_id = read_last_game_id(filename)
+    
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
                            turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, 
-                           players_win= players_win, players_start=players_start)
+                           players_win= players_win, players_start=players_start, last_game_id = last_game_id)
     
 @app.route('/update_life', methods=['POST'])
 def update_life():
@@ -228,7 +251,7 @@ def export_csv():
             ]]
     for player in players_life:
         data.append([
-            0,
+            last_game_id + 1,
             "Normal",
             datetime.now().strftime('%d-%m-%Y'),
             player, 

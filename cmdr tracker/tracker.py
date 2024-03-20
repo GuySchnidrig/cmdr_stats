@@ -88,11 +88,11 @@ def update_life():
 
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
                            turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, 
-                           active_player_index = active_player_index, deck_names = deck_names)
+                           active_player_index = active_player_index, deck_names = deck_names, start_time = start_time)
 
 @app.route('/pass_turn', methods=['POST'])
 def pass_turn():
-    global active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names
+    global active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names 
     
     end_time = time.time()
     turn_time = end_time - start_turn_time
@@ -118,7 +118,7 @@ def pass_turn():
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
                            turn_count=turn_count, start_turn_time = start_turn_time, elapsed_time=elapsed_time, 
                            turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names)
+                           deck_names = deck_names, start_time = start_time)
 
 @app.route('/change_active_player', methods=['POST'])
 def change_active_player():
@@ -142,7 +142,7 @@ def change_active_player():
     start_turn_time = time.time()
     
     return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,start_turn_time = start_turn_time,
-                           elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names)
+                           elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names, start_time = start_time )
 
 
 @app.route('/update_winner', methods=['POST'])
@@ -162,7 +162,7 @@ def update_winner():
     # Render the template with updated data
     return render_template('index.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names)
+                           deck_names = deck_names, start_time = start_time)
 
    
 @app.route('/export_csv', methods=['POST'])
@@ -177,13 +177,12 @@ def export_csv():
             'Start',
             'Life', 
             'Time (Minutes)',
-            'Win'
             'Win Turn',
+            'Win',
             ]]
     
     for player in players_life:
         data.append([
-            0,
             0,
             0,
             player, 

@@ -8,13 +8,24 @@
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #68656A;
+        }
+        
+        .title{
+            color: #f1e6b2
+        }
         button {
             margin-right: 10px;
             font-size: 16px;
             margin-bottom: 10px;
+            background-color: #f1e6b2;
         }
         button.selected {
-            background-color: #007bff;
+            background-color: #bf624c;
             color: #fff;
         }
         #submitBtn {
@@ -31,21 +42,24 @@
         .player-row {
             display: flex;
             margin-bottom: 10px;
+            
         }
         .player-input, .deck-input {
             margin-right: 10px;
+            
+            background-color: #D1D0D2;
         }
     </style>
 </head>
 <body>
-    <h1>cmdr tracker</h1>
+    <h1 class = "title">cmdr tracker</h1>
     <div>Enter Player and Decks</div>
     <form action="/submit_players" method="post" id="playerForm">
         <div>
             <button type="button" onclick="setPlayers(3)" id="btn3">3 Players</button>
             <button type="button" onclick="setPlayers(4)" id="btn4">4 Players</button>
         </div>
-        <div id="playerInputs"></div> <!-- Container for player name input fields -->
+        <div id="playerInputs"></div> 
         <input type="hidden" id="num_players" name="num_players" value="3">
         <button type="submit" id="submitBtn">Submit</button>
     </form>

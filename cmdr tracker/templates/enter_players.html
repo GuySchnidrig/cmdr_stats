@@ -70,64 +70,90 @@
             document.getElementById("btn3").classList.remove("selected");
             document.getElementById("btn4").classList.remove("selected");
             document.getElementById("btn" + num).classList.add("selected");
-    
+
             var playerInputsContainer = document.getElementById("playerInputs");
             playerInputsContainer.innerHTML = ""; // Clear previous player input fields
-    
+
             for (var i = 0; i < num; i++) {
                 var playerRow = document.createElement("div");
                 playerRow.classList.add("player-row");
-    
+
                 var playerSelect = document.createElement("select");
                 playerSelect.name = "player" + (i + 1);
                 playerSelect.classList.add("player-select");
-    
+
                 var playerOption = document.createElement("option");
                 playerOption.value = "";
                 playerOption.text = "Select Player " + (i + 1);
                 playerOption.disabled = true;
                 playerOption.selected = true;
                 playerSelect.appendChild(playerOption);
-    
+
                 for (var j = 0; j < playerSuggestions.length; j++) {
                     var option = document.createElement("option");
                     option.value = playerSuggestions[j];
                     option.text = playerSuggestions[j];
                     playerSelect.appendChild(option);
                 }
-    
+
                 // Add "Other" option
                 var otherOption = document.createElement("option");
                 otherOption.value = "Other";
                 otherOption.text = "Other";
                 playerSelect.appendChild(otherOption);
-    
+
                 playerRow.appendChild(playerSelect);
-    
+
                 var deckSelect = document.createElement("select");
                 deckSelect.name = "deck" + (i + 1);
                 deckSelect.classList.add("deck-select");
-    
+
                 var deckOption = document.createElement("option");
                 deckOption.value = "";
                 deckOption.text = "Select Deck " + (i + 1);
                 deckOption.disabled = true;
                 deckOption.selected = true;
                 deckSelect.appendChild(deckOption);
-    
+
                 for (var k = 0; k < deckSuggestions.length; k++) {
                     var option = document.createElement("option");
                     option.value = deckSuggestions[k];
                     option.text = deckSuggestions[k];
                     deckSelect.appendChild(option);
                 }
-    
+
                 playerRow.appendChild(deckSelect);
-    
+
+                // Create the radio button container
+                var startRadioContainer = document.createElement("div");
+                startRadioContainer.classList.add("radio-container");
+
+                // Add checkbox for starting the game
+                // Create the radio button for starting the game
+                var startRadio = document.createElement("input");
+                startRadio.type = "radio";
+                startRadio.name = "start_game"; // Ensure all radio buttons have the same name
+                startRadio.value = "player" + (i + 1); // Assign a value to identify the player
+                startRadio.id = "start_game" + (i + 1);
+                startRadio.classList.add("start-radio");
+                startRadio.style.transform = "scale(1.5)"; // Scale the checkbox to make it larger
+
+
+                // Create the label for the radio button
+                var startLabel = document.createElement("label");
+                startLabel.htmlFor = "start_game" + (i + 1);
+
+                // Append the radio button and label to the player row
+                playerRow.appendChild(startRadio);
+                playerRow.appendChild(startLabel);
+
+                // Append the player row to the container
                 playerInputsContainer.appendChild(playerRow);
+
+                
             }
         }
-    
+
         var playerSuggestions = {{ player_names_suggestions | tojson }};
         var deckSuggestions = {{ commander_names_suggestions | tojson }};
     

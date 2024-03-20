@@ -4,6 +4,7 @@ import time
 import csv
 from io import StringIO
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -34,7 +35,9 @@ def save_csv(data):
     filename = os.path.join(folder_path, "game_data.csv")
     with open(filename, "a", newline="") as csvfile:
         csv_writer = csv.writer(csvfile)
-        for row in data:
+        for idx, row in enumerate(data):
+            if idx == 0:  # Skip the first row (header)
+                continue
             csv_writer.writerow(row)
 
 @app.route('/')
@@ -48,28 +51,45 @@ def index():
     commander_names_suggestions = read_txt_file('commander_names.txt')    
 
     return render_template('enter_players.html', commander_names_suggestions = commander_names_suggestions, player_names_suggestions = player_names_suggestions, 
-                           active_player_index = active_player_index, turn_count = turn_count)
+                           active_player_index = active_player_index, turn_count = turn_count, players_startt = players_start)
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
-    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win
+    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start
     
     num_players = int(request.form['num_players'])
+    
     players_life = {request.form[f'player{i+1}']: 40 for i in range(num_players)}
     players_time = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
     players_decks = {request.form[f'player{i+1}']: request.form[f'deck{i+1}'] for i in range(num_players)}
     players_win = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
     players_start = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
-
     
     # Get the list of player names from the form inputs
     player_names = [request.form[f'player{i+1}'] for i in range(num_players)]
     deck_names = [request.form[f'deck{i+1}'] for i in range(num_players)]
-    #players_start = [request.form[f'start{i+1}'] for i in range(num_players)]
+        
+    start_game_radio = (request.form['start_game'])
+    digit = 0
     
-    print(players_time)
-    print(players_decks)
+    for char in start_game_radio:
+        if char.isdigit():
+            digit = char
+            break
+    
+    # Set Active player to starting player
+    active_player_index = int(digit) - 1
+    
+    # Get the keys (players) as a list and access the nth key
+    player_to_change = list(players_start.keys())[active_player_index]
+
+    # Change the value of the nth player to 1
+    players_start[player_to_change] = 1
+
+    # Tests
+    print(players_start)      
     print(players_win)
+    print(players_life)
     
     # Update time
     start_time = time.time()
@@ -81,7 +101,8 @@ def submit_players():
     elapsed_time = end_time - start_time
     
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
-                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, players_win= players_win, players_start = players_start)
+                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, 
+                           players_win= players_win, players_start=players_start)
     
 @app.route('/update_life', methods=['POST'])
 def update_life():
@@ -94,6 +115,10 @@ def update_life():
         players_life[player] += amount
     elif action == 'decrease':
         players_life[player] -= amount
+   
+    print(players_start)      
+    print(players_win)
+    print(players_life)     
 
     #  Elapsed_time
     end_time = time.time()
@@ -113,8 +138,6 @@ def pass_turn():
     # Update players' turn times
     active_player = list(players_life.keys())[active_player_index]
     players_time[active_player] = players_time.get(active_player, 0) + turn_time
-    print(players_time)
-    print(players_life)
     
     # Update active player index
     active_player_index = (active_player_index + 1) % len(players_life)
@@ -155,18 +178,21 @@ def change_active_player():
     start_turn_time = time.time()
     
     return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,start_turn_time = start_turn_time,
-                           elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names, start_time = start_time, players_start = players_start)
+                           elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names, start_time = start_time, 
+                           players_start = players_start)
 
 
 @app.route('/end_game', methods=['POST'])
 def render_end():
+    
+    
     return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
                            deck_names = deck_names, start_time = start_time, players_start = players_start)
 
 @app.route('/update_winner', methods=['POST'])
 def update_winner():
-    global players_win, active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names
+    global players_win, active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, players_start
     player_won_select = None
     
     # Reset all players' win counts to 0
@@ -190,7 +216,7 @@ def export_csv():
     # Data
     data = [[
             'Game_ID',
-            'Game_Type'
+            'Game_Type',
             'Date',
             'Player', 
             'Commander',
@@ -198,16 +224,16 @@ def export_csv():
             'Life', 
             'Time (Minutes)',
             'Win Turn',
-            'Win'
+            'Win',
             ]]
-    
     for player in players_life:
         data.append([
             0,
             "Normal",
+            datetime.now().strftime('%d-%m-%Y'),
             player, 
             players_decks[player],
-            players_start,
+            players_start[player],
             players_life[player],  
             round(players_time[player] / 60, 2), 
             turn_count,

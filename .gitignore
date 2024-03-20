@@ -7,3 +7,16 @@ default-cards-20230425090634.json
 cmdr.gsheet
 input_data.gsheet
 *.gsheet
+venv/
+.conda
+__pycache__/
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.conda/
+conda/

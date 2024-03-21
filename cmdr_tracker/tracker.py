@@ -8,6 +8,12 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# Get the directory of the currently executing script
+script_directory = os.path.dirname(__file__)
+
+# Set the current working directory to the script directory
+os.chdir(script_directory)
+
 # Initate players
 players_life = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
 players_time = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
@@ -66,14 +72,14 @@ def index():
     turn_count = 1
     
     player_names_suggestions = read_txt_file('player_names.txt')  
-    commander_names_suggestions = read_txt_file('commander_names.txt')    
+    commander_names_suggestions = read_txt_file('commander_names.txt')
 
     return render_template('enter_players.html', commander_names_suggestions = commander_names_suggestions, player_names_suggestions = player_names_suggestions, 
                            active_player_index = active_player_index, turn_count = turn_count, players_startt = players_start)
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():
-    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start, last_game_id
+    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start, last_game_id, digit
     
     num_players = int(request.form['num_players'])
     
@@ -125,7 +131,7 @@ def submit_players():
     
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
                            turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, 
-                           players_win= players_win, players_start=players_start, last_game_id = last_game_id)
+                           players_win= players_win, players_start=players_start, last_game_id = last_game_id, digit = digit)
     
 @app.route('/update_life', methods=['POST'])
 def update_life():
@@ -148,12 +154,12 @@ def update_life():
     elapsed_time = end_time - start_time
 
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
-                           turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, 
+                           turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, digit = digit,
                            active_player_index = active_player_index, deck_names = deck_names, start_time = start_time, players_start = players_start)
 
 @app.route('/pass_turn', methods=['POST'])
 def pass_turn():
-    global active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names 
+    global active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, digit
     
     end_time = time.time()
     turn_time = end_time - start_turn_time
@@ -165,7 +171,7 @@ def pass_turn():
     # Update active player index
     active_player_index = (active_player_index + 1) % len(players_life)
     
-    if active_player_index == 0:  # If it's the first player's turn again
+    if active_player_index == (int(digit) - 1):  # If it's the first player's turn again
         turn_count += 1
 
      # Start time for the next turn
@@ -177,7 +183,7 @@ def pass_turn():
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
                            turn_count=turn_count, start_turn_time = start_turn_time, elapsed_time=elapsed_time, 
                            turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start)
+                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
 
 @app.route('/change_active_player', methods=['POST'])
 def change_active_player():
@@ -202,7 +208,7 @@ def change_active_player():
     
     return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,start_turn_time = start_turn_time,
                            elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names, start_time = start_time, 
-                           players_start = players_start)
+                           players_start = players_start, digit = digit)
 
 
 @app.route('/end_game', methods=['POST'])
@@ -211,7 +217,7 @@ def render_end():
     
     return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start)
+                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
 
 @app.route('/update_winner', methods=['POST'])
 def update_winner():
@@ -231,7 +237,7 @@ def update_winner():
     # Render the template with updated data
     return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, player_won_select = players_win[player])
+                           deck_names = deck_names, start_time = start_time, players_start = players_start, player_won_select = players_win[player], digit = digit)
 
 
 @app.route('/export_csv', methods=['POST'])
@@ -268,7 +274,7 @@ def export_csv():
    # Return JSON response along with the CSV file as an attachment
     return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start)
+                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

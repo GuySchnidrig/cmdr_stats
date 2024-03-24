@@ -131,18 +131,24 @@ data %>%
 
 ```{r, echo = FALSE}
 most_played_card <- all_decks_join %>% 
-  filter(type_1 != "Land", type_1 != "Land", category != "Ramp") %>% 
+  filter(type_1 != "Land", category != "Ramp") %>% 
   group_by(card_name) %>%
   count() %>% 
   ungroup() %>% 
   arrange(desc(n)) %>%
   slice_head(n = 5)
 
+land_count <- all_decks_join %>%
+  filter(type_1 == "Land") %>% 
+  group_by(deck_name, Deck_ID, Player) %>% 
+  summarise(Sum_land_count = sum(Quantity, na.rm = T))
+
 
 all_decks_join %>%
-  filter(type_1 != "Land", type_1 != "Land") %>% 
+  filter(type_1 != "Land") %>% 
   #distinct(Deck_ID, .keep_all = TRUE) %>% 
-  summarise(`Average cmc` = mean(cmc),
+  summarise(`Average land count` = mean(land_count$Sum_land_count),
+            `Average cmc` = mean(cmc, na.rm = T),
             `Average salt score` = mean(salt, na.rm = T),
             `Average card price` = mean(price, na.rm = T),
             `Most expensive card` = max(price)) %>%
@@ -175,12 +181,13 @@ deck_cmc_average <- deck_cmc %>%
   summarise(Average_Number_Spells = (Average_Number_Spells) / Number_of_decks) %>% 
   left_join(., player_color_mapping, by = "Player")
 
-player.cols = c("Aless" = "#ED90A4",
-               "Elie" = "#7EBA68",
-               "Fubu" = "#1DC199",
-               "Guy" = "#00BFC8",
-               "Lueku" = "#BB9DEA",
-               "Tobi" = "#E48FD1")
+
+player.cols.df <- deck_cmc_average %>% 
+  distinct(Player, .keep_all = T) %>% 
+  select(Player, color) 
+
+player.cols = as.character(player.cols.df$color)
+names(player.cols) = player.cols.df$Player
  
 ggplotly(deck_cmc_average %>%
   filter(cmc > 0, Player != "Lucien") %>%
@@ -323,7 +330,7 @@ selectInput(
 
 ## Column
 
-### Stats
+### Overall
 
 ```{r player stats, echo=FALSE}
 renderTable({
@@ -336,9 +343,37 @@ renderTable({
     as.data.table() })
 ```
 
-### Stats 2
-
+### Most Popular Cards
 ```{r player stats2, echo=FALSE}
+renderTable({
+  all_decks_join %>% 
+  filter(type_1 != "Land", category != "Ramp", Player == input$Player) %>%  # input$Player
+  group_by(card_name) %>%
+  count() %>% 
+  ungroup() %>% 
+  arrange(desc(n)) %>%
+  slice_head(n = 5) %>% 
+    rename("Count" = "n",
+           "Card Name" = "card_name") %>% 
+    as.data.table() })
+```
+### Lands
+
+```{r player stats3, echo=FALSE}
+renderTable({
+  land_count %>%
+    filter(Player == input$Player) %>%  # input$Player
+    group_by(Player) %>% 
+    summarise(`Average land count` = mean(Sum_land_count, na.rm = T),
+              ) %>% 
+    select(-Player) %>% 
+    as.data.table() })
+
+```
+
+### Winrates
+
+```{r player stats4, echo=FALSE}
 renderTable({ data %>% 
   filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
   group_by(Commander) %>%
@@ -380,7 +415,7 @@ ggdraw() +
 })
 ```
 
-### Mana Value Distribution
+### Average Mana Value Distribution
 
 ```{r Mana Value Distribution, echo=FALSE}
 renderPlotly({

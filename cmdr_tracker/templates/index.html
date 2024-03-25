@@ -75,18 +75,19 @@
         .adjust-buttons {
             display: flex;
             justify-content: flex-start; /* Align buttons to the right */
-            margin-left: 0px; /* Center the adjust-buttons2 horizontally */
+            margin-left: 5px; /* Center the adjust-buttons2 horizontally */
         }
 
         .adjust-buttons2 {
             display: flex;
             justify-content: flex-end; /* Align buttons to the right */
-            margin-right: 0px; /* Center the adjust-buttons2 horizontally */
+            margin-right: 5px; /* Center the adjust-buttons2 horizontally */
         }
 
         .adjust-buttons button {
             padding: auto; /* Adjusted padding for button size */
             font-size: 40px;
+            padding-right: 60px;
             cursor: pointer;
             background-color: transparent;
             color: #f1e6b2;
@@ -96,6 +97,7 @@
 
         .adjust-buttons2 button {
             padding: auto; /* Adjusted padding for button size */
+            padding-left: 60px;
             font-size: 40px;
             cursor: pointer;
             background-color: transparent;
@@ -120,6 +122,11 @@
         
         .turn-container {
             color: #f1e6b2;
+        }
+
+        end-container{
+            color: #f1e6b2;
+  
         }
 
         .player-card:nth-child(1) {
@@ -150,6 +157,8 @@
         
         .pass-turn-form button {
             padding:auto;
+            padding-top: 35px;
+            padding-bottom: 35px;
             background-color: #f1e6b2;
         }
         .export-csv button {
@@ -160,6 +169,12 @@
   
         .time-font{
             white-space: nowrap;
+        }
+                
+        .end-game button {
+            background-color: #f1e6b2;
+            margin-top: 60px; /* Push the form to the bottom */
+
         }
 
     </style>
@@ -209,6 +224,11 @@
             <form action="/pass_turn" method="post" class="pass-turn-form">
             <button type="submit">Pass Turn</button>
             
+
+        </div> 
+        
+        <div class="turn-container">
+
             <div id="turn-time" class="time-font">Turn:</div>
             <div id="turn-time-total" class="time-font">Total:</div>
 
@@ -241,12 +261,27 @@
             // Call updateTotalTime function to update elapsed time every second
             updateTotalTime();
             </script>
-        </div> 
-           
-        <form action="/end_game" method="post", class="export-csv">
-            <button type="submit" class="export-csv-btn">END</button>
+        
+        <div class="end-container">
+        <form id="endGameForm" action="/end_game" method="post" class="end-game ">
+            <button type="submit" id="endGameButton">END</button>
         </form>
 
+        <script>
+            // JavaScript code to handle the popup
+            document.getElementById("endGameButton").addEventListener("click", function(event) {
+                if (!confirm("Are you sure you want to end the game?")) {
+                    // If user cancels, prevent the default form submission action
+                    event.preventDefault();
+                }
+            });
+        </script>
+        </div> 
+        
+        </div> 
 
+
+
+        
 </body>
 </html>

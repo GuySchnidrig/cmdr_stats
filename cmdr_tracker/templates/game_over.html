@@ -55,6 +55,11 @@
                 background-color: #f1e6b2;
             }
 
+            .update-winner input[type="text"] {
+                padding:auto;
+                background-color: #D1D0D2;
+            }
+
 
         </style>
     </head>
@@ -63,7 +68,7 @@
 
             <div class="update-winner">
                
-                <form action="/update_winner" method="post" class="update-winner">
+                <form action="/update_winner" method="post">
                     Congratulation to:
     
                     <label for="winner", class="dropdown"></label>
@@ -74,7 +79,25 @@
                         {% endfor %}
                     </select>
                     
-                    <button type="submit" >Winner</button>
+                    <br>
+
+                    <label for="mvpCard" >MV Card Name:</label>
+                    <input type="text" id="mvpCard" name="mvpCard">
+        
+                    <br>
+        
+                    <label for="gameWinningType">Game Winning Type:</label>
+                    <select id="gameWinningType" name="gameWinningType">
+                        <option value="Combat Damage">Combat Damage</option>
+                        <option value="Non-Combat Damage">Non-Combat Damage</option>
+                        <option value="Commander Damage">Commander Damage</option>
+                        <option value="Combo">Combo</option>
+                        <!-- Add more options as needed -->
+                    </select>
+        
+                    <br>
+
+                    <button type="submit" >Submit</button>
                 </form> 
                 
         </div>

@@ -1,6 +1,5 @@
-Game_ID,Game_Type, Date,Player',Commander,Start,Life,Time (Minutes),Win Turn,Win
-0,Normal,21-03-2024,Aless,"Aesi, Tyrant of Gyre Strait",0,40,0.0,1,0
-0,Normal,21-03-2024,Domi69,"Archelos, Lagoon Mystic",0,40,0.0,1,0
-0,Normal,21-03-2024,Guy,"Atraxa, Praetors' Voice",0,40,0.0,1,1
-0,Normal,21-03-2024,Domi,"Athreos, God of Passage",1,40,0.0,1,0
-
+Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_card, Life, Time (Minutes), Deck_Link
+4,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
+4,Normal,25-03-2024,Domi,Abaddon the Despoiler,0,1,1,Non-Combat Damage,TEST,40,0.0,
+4,Normal,25-03-2024,Domi69,Abomination of Llanowar,1,0,1,Non-Combat Damage,TEST,40,0.02,
+4,Normal,25-03-2024,Guy,"Aboshan, Cephalid Emperor",0,0,1,Non-Combat Damage,TEST,40,0.0,

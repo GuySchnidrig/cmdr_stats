@@ -72,7 +72,7 @@ def index():
     turn_count = 1
     
     player_names_suggestions = read_txt_file('player_names.txt')  
-    commander_names_suggestions = read_txt_file('commander_names.txt')
+    commander_names_suggestions = read_txt_file('legends.txt')
 
     return render_template('enter_players.html', commander_names_suggestions = commander_names_suggestions, player_names_suggestions = player_names_suggestions, 
                            active_player_index = active_player_index, turn_count = turn_count, players_startt = players_start)
@@ -133,6 +133,7 @@ def submit_players():
                            turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, 
                            players_win= players_win, players_start=players_start, last_game_id = last_game_id, digit = digit)
     
+
 @app.route('/update_life', methods=['POST'])
 def update_life():
     global players_life, start_time, players_time, deck_names
@@ -149,7 +150,6 @@ def update_life():
     end_time = time.time()
     elapsed_time = end_time - start_time
 
-    
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
                            turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, digit = digit,
                            active_player_index = active_player_index, deck_names = deck_names, start_time = start_time, players_start = players_start)
@@ -218,9 +218,9 @@ def render_end():
 
 @app.route('/update_winner', methods=['POST'])
 def update_winner():
-    global players_win, active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, players_start
-    player_won_select = None
+    global players_win, active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, players_start, win_type, mv_card
     
+
     # Reset all players' win counts to 0
     for player in players_win:
         players_win[player] = 0
@@ -231,10 +231,15 @@ def update_winner():
     # Increment the win count for the selected winner
     players_win[player] += 1
     
+    # Get the selected gameWinningType
+    win_type = request.form['gameWinningType']
+    
+    mv_card = request.form['mvpCard']
+    
     # Render the template with updated data
     return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
                            turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, player_won_select = players_win[player], digit = digit)
+                           deck_names = deck_names, start_time = start_time, players_start = players_start, player_won_select = players_win[player], digit = digit, win_type = win_type, mv_card = mv_card)
 
 
 @app.route('/export_csv', methods=['POST'])
@@ -247,23 +252,31 @@ def export_csv():
             'Player', 
             'Commander',
             'Start',
+            'Win',
+            'Win_Turn',
+            'Win_Type',
+            'mv_card',
             'Life', 
             'Time (Minutes)',
-            'Win Turn',
-            'Win',
+            'Deck_Link' 
             ]]
     for player in players_life:
         data.append([
-            last_game_id + 1,
-            "Normal",
-            datetime.now().strftime('%d-%m-%Y'),
-            player, 
-            players_decks[player],
-            players_start[player],
-            players_life[player],  
-            round(players_time[player] / 60, 2), 
-            turn_count,
-            players_win[player]])
+            last_game_id + 1,                          # Game ID
+            "Normal",                                  # Game Type
+            datetime.now().strftime('%d-%m-%Y'),       # Date
+            player,                                    # Player
+            players_decks[player],                     # Commander
+            players_start[player],                     # Start
+            players_win[player],                       # Win
+            turn_count,                                # Win Turn
+            win_type,                                  # Win Type
+            mv_card,                                   # mv_card
+            players_life[player],                      # Life
+            round(players_time[player] / 60, 2),       # Time  
+            None                                       # Space for Deck link
+            ])      
+                                                         
 
     # Save copy to server
     save_csv(data)  # Save CSV data to a file on the server

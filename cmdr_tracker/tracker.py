@@ -144,15 +144,12 @@ def update_life():
         players_life[player] += amount
     elif action == 'decrease':
         players_life[player] -= amount
-   
-    print(players_start)      
-    print(players_win)
-    print(players_life)     
 
     #  Elapsed_time
     end_time = time.time()
     elapsed_time = end_time - start_time
 
+    
     return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
                            turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, digit = digit,
                            active_player_index = active_player_index, deck_names = deck_names, start_time = start_time, players_start = players_start)
@@ -169,7 +166,7 @@ def pass_turn():
     players_time[active_player] = players_time.get(active_player, 0) + turn_time
     
     # Update active player index
-    active_player_index = (active_player_index + 1) % len(players_life)
+    active_player_index = (active_player_index - 1) % len(players_life)
     
     if active_player_index == (int(digit) - 1):  # If it's the first player's turn again
         turn_count += 1

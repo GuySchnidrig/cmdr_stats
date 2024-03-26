@@ -1,5 +1,5 @@
 # Import libraries
-from flask import Flask, render_template, request, Response, jsonify
+from flask import Flask, render_template, request, Response, jsonify, redirect, url_for, session, flash
 import time
 import csv
 from io import StringIO
@@ -7,12 +7,16 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 # Get the directory of the currently executing script
 script_directory = os.path.dirname(__file__)
 
 # Set the current working directory to the script directory
 os.chdir(script_directory)
+
+# Configuration settings
+USER_CREDENTIALS = {'username': 'Guy', 'password': '1234'}
 
 # Initate players
 players_life = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
@@ -63,19 +67,63 @@ def read_last_game_id(filename):
     return last_game_id
 
 
+player_names_suggestions = read_txt_file('player_names.txt')  
+commander_names_suggestions = read_txt_file('legends.txt')
 
 @app.route('/')
 def index():
-    global active_player_index, turn_count
-    
-    active_player_index = 0
-    turn_count = 1
-    
-    player_names_suggestions = read_txt_file('player_names.txt')  
-    commander_names_suggestions = read_txt_file('legends.txt')
+    return redirect(url_for('login'))
 
-    return render_template('enter_players.html', commander_names_suggestions = commander_names_suggestions, player_names_suggestions = player_names_suggestions, 
-                           active_player_index = active_player_index, turn_count = turn_count, players_startt = players_start)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == USER_CREDENTIALS['username'] and password == USER_CREDENTIALS['password']:
+            session['logged_in'] = True
+            session['username'] = username
+            flash("Login successful!", "success")
+            return redirect(url_for('enter_players'))
+        else:
+            flash("Invalid username or password. Please try again.", "error")
+    return render_template('login.html')
+
+
+@app.route('/enter_players')
+def enter_players():
+    if 'logged_in' in session and session['logged_in']:
+        if 'user_data' not in session:
+            session['user_data'] = {
+                'active_player_index': 0,
+                'turn_count': 1,
+                'start_time': None,
+                'turn_time': None,
+                'start_turn_time': None,
+                'new_game_id': 0,
+                'players_life': {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40},
+                'players_time': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0},
+                'players_decks': {'Player 1': "Default1", 'Player 2': "Default1", 'Player 3': "Default1", 'Player 4': "Default1"},
+                'players_win': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0},
+                'players_start': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
+            }
+            
+            return render_template('enter_players.html', commander_names_suggestions=commander_names_suggestions,
+                               player_names_suggestions=player_names_suggestions,
+                               active_player_index=session['user_data']['active_player_index'],
+                               turn_count=session['user_data']['turn_count'],
+                               players_start=session['user_data']['players_start'])
+   
+        else:
+            user_data = session['user_data']
+            return render_template('test.html', 
+                                   turn_count=session['user_data']['turn_count'],
+                                   turn_time=user_data['turn_time'],
+                                   players_time=user_data['players_time'],
+                                   active_player_index=user_data['active_player_index']) 
+    else:
+        flash("You must be logged in to access this page.")
+        # Redirect the user to the login page or somewhere else
+        # Example: return redirect(url_for('login'))
 
 @app.route('/submit_players', methods=['POST'])
 def submit_players():

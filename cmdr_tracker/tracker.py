@@ -18,21 +18,6 @@ os.chdir(script_directory)
 # Configuration settings
 USER_CREDENTIALS = {'username': 'Guy', 'password': '1234'}
 
-# Initate players
-players_life = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
-players_time = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
-players_decks = {'Player 1': "Default1", 'Player 2': "Default1", 'Player 3': "Default1", 'Player 4': "Default1"}
-players_win = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
-players_start = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
-
-# Initial active player, turn count, start_time, turn_time, start_turn_time
-active_player_index = 0
-turn_count = 1
-start_time = None
-turn_time = None
-start_turn_time = None
-new_game_id = 0
-
 # Load suggestions
 def read_txt_file(file_path):
     with open(file_path, 'r') as f:
@@ -50,6 +35,7 @@ def save_csv(data):
                 continue
             csv_writer.writerow(row)
  
+ # Function to read CSV and define last game id
 def read_last_game_id(filename):
     folder_path = "data/"
     filename = os.path.join(folder_path, "game_data.csv")
@@ -66,13 +52,15 @@ def read_last_game_id(filename):
 
     return last_game_id
 
-
 player_names_suggestions = read_txt_file('player_names.txt')  
 commander_names_suggestions = read_txt_file('legends.txt')
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    if 'logged_in' in session and session['logged_in']:
+        return(redirect(url_for('login')))
+    else:
+        return(redirect(url_for('login')))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -92,51 +80,37 @@ def login():
 @app.route('/enter_players')
 def enter_players():
     if 'logged_in' in session and session['logged_in']:
-        if 'user_data' not in session:
-            session['user_data'] = {
-                'active_player_index': 0,
-                'turn_count': 1,
-                'start_time': None,
-                'turn_time': None,
-                'start_turn_time': None,
-                'new_game_id': 0,
-                'players_life': {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40},
-                'players_time': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0},
-                'players_decks': {'Player 1': "Default1", 'Player 2': "Default1", 'Player 3': "Default1", 'Player 4': "Default1"},
-                'players_win': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0},
-                'players_start': {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
-            }
-            
-            return render_template('enter_players.html', commander_names_suggestions=commander_names_suggestions,
-                               player_names_suggestions=player_names_suggestions,
-                               active_player_index=session['user_data']['active_player_index'],
-                               turn_count=session['user_data']['turn_count'])
-   
-        else:
-            return render_template('test.html', 
-                               active_player_index=session['user_data']['active_player_index'],
-                               turn_count=session['user_data']['turn_count']) 
-    else:
-        flash("You must be logged in to access this page.")
-        # Redirect the user to the login page or somewhere else
-        # Example: return redirect(url_for('login'))
+        session['players_life'] = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
+        session['players_time'] = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
+        session['players_decks'] = {'Player 1': "Default1", 'Player 2': "Default1", 'Player 3': "Default1", 'Player 4': "Default1"}
+        session['players_win'] = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
+        session['players_start'] = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
 
-@app.route('/submit_players', methods=['POST'])
-def submit_players():
-    global players_life, start_time, turn_time, start_turn_time, player_names, active_player_index, players_time, deck_names, players_decks, players_win, players_start, last_game_id, digit
-    
-    num_players = int(request.form['num_players'])
-    
-    players_life = {request.form[f'player{i+1}']: 40 for i in range(num_players)}
-    players_time = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
-    players_decks = {request.form[f'player{i+1}']: request.form[f'deck{i+1}'] for i in range(num_players)}
-    players_win = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
-    players_start = {request.form[f'player{i+1}']: 0 for i in range(num_players)}
-    
-    # Get the list of player names from the form inputs
-    player_names = [request.form[f'player{i+1}'] for i in range(num_players)]
-    deck_names = [request.form[f'deck{i+1}'] for i in range(num_players)]
+        session['active_player_index'] = 0
+        session['turn_count'] = 1
+        session['start_time'] = None
+        session['turn_time'] = None
+        session['start_turn_time'] = None
+        session['new_game_id'] = 0
+        session['num_players'] = 0
         
+    return render_template('enter_players.html', 
+                           commander_names_suggestions=commander_names_suggestions,
+                           player_names_suggestions=player_names_suggestions)
+
+
+@app.route('/submit_test', methods=['POST'])
+def submit_test():
+    session['num_players'] = int(request.form['num_players'])
+    session['players_life'] = {request.form[f'player{i+1}']: 40 for i in range(session['num_players'])}
+    session['players_time'] = {request.form[f'player{i+1}']: 0 for i in range(session['num_players'])}
+    session['players_decks'] = {request.form[f'player{i+1}']: request.form[f'deck{i+1}'] for i in range(session['num_players'])}
+    session['players_win'] = {request.form[f'player{i+1}']: 0 for i in range(session['num_players'])}
+    session['players_start'] = {request.form[f'player{i+1}']: 0 for i in range(session['num_players'])}
+    session['player_names'] = [request.form[f'player{i+1}'] for i in range(session['num_players'])]
+    session['deck_names'] = [request.form[f'deck{i+1}'] for i in range(session['num_players'])]
+    session['turn_count'] = 1
+    
     start_game_radio = (request.form['start_game'])
     digit = 0
     
@@ -144,43 +118,48 @@ def submit_players():
         if char.isdigit():
             digit = char
             break
-    
+
     # Set Active player to starting player
-    active_player_index = int(digit) - 1
-    
+    session['active_player_index'] = int(digit) - 1
+
     # Get the keys (players) as a list and access the nth key
-    player_to_change = list(players_start.keys())[active_player_index]
+    player_to_change = list(session['players_start'].keys())[session['active_player_index']]
 
     # Change the value of the nth player to 1
-    players_start[player_to_change] = 1
+    session['players_start'][player_to_change] = 1
 
-    # Tests
-    print(new_game_id)      
-    print(players_win)
-    print(players_life)
-    
     # Update time
-    start_time = time.time()
-    turn_time = time.time()
-    start_turn_time = time.time()
+    session['start_time'] = time.time()
+    session['turn_time'] = time.time()
+    session['start_turn_time'] = time.time()
     
     # Elapsed_time
-    end_time = time.time()
-    elapsed_time = end_time - start_time
+    session['end_time'] = time.time()
+    session['elapsed_time'] = session['end_time'] - session['start_time'] 
     
     # Game ID
     folder_path = "data/"
     filename = os.path.join(folder_path, "game_data.csv")
-    last_game_id = read_last_game_id(filename)
-    
-    return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], turn_count=turn_count, elapsed_time=elapsed_time,
-                           turn_time=turn_time, players_time=players_time, player_names=player_names, active_player_index=active_player_index, deck_names=deck_names, 
-                           players_win= players_win, players_start=players_start, last_game_id = last_game_id, digit = digit)
-    
+    session['last_game_id'] = read_last_game_id(filename)
+
+    return render_template('index.html',
+                           players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           turn_count = session['turn_count'],
+                           elapsed_time = session['elapsed_time'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'])
+
 
 @app.route('/update_life', methods=['POST'])
 def update_life():
-    global players_life, start_time, players_time, deck_names
     player = request.form['player']
     action = request.form['action']
     amount = int(request.form['amount'])

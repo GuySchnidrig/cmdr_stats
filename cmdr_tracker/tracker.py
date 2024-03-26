@@ -110,16 +110,12 @@ def enter_players():
             return render_template('enter_players.html', commander_names_suggestions=commander_names_suggestions,
                                player_names_suggestions=player_names_suggestions,
                                active_player_index=session['user_data']['active_player_index'],
-                               turn_count=session['user_data']['turn_count'],
-                               players_start=session['user_data']['players_start'])
+                               turn_count=session['user_data']['turn_count'])
    
         else:
-            user_data = session['user_data']
             return render_template('test.html', 
-                                   turn_count=session['user_data']['turn_count'],
-                                   turn_time=user_data['turn_time'],
-                                   players_time=user_data['players_time'],
-                                   active_player_index=user_data['active_player_index']) 
+                               active_player_index=session['user_data']['active_player_index'],
+                               turn_count=session['user_data']['turn_count']) 
     else:
         flash("You must be logged in to access this page.")
         # Redirect the user to the login page or somewhere else

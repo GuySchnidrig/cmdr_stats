@@ -1,9 +1,5 @@
 Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_card, Life, Time (Minutes), Deck_Link
-4,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
-4,Normal,25-03-2024,Domi,Abaddon the Despoiler,0,1,1,Non-Combat Damage,TEST,40,0.0,
-4,Normal,25-03-2024,Domi69,Abomination of Llanowar,1,0,1,Non-Combat Damage,TEST,40,0.02,
-4,Normal,25-03-2024,Guy,"Aboshan, Cephalid Emperor",0,0,1,Non-Combat Damage,TEST,40,0.0,
-5,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,4,Non-Combat Damage,TEST,40,0.03,
-5,Normal,25-03-2024,Domi,"Abdel Adrian, Gorion's Ward",1,1,4,Non-Combat Damage,TEST,40,0.06,
-5,Normal,25-03-2024,Domi69,Abomination of Llanowar,0,0,4,Non-Combat Damage,TEST,40,0.03,
-5,Normal,25-03-2024,Elie,Abomination of Llanowar,0,0,4,Non-Combat Damage,TEST,40,0.03,
+60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
+60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
+60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
+60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,

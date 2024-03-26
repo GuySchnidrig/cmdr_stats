@@ -93,13 +93,13 @@ def enter_players():
         session['start_turn_time'] = None
         session['new_game_id'] = 0
         session['num_players'] = 0
-        
+    print(session)    
     return render_template('enter_players.html', 
                            commander_names_suggestions=commander_names_suggestions,
                            player_names_suggestions=player_names_suggestions)
 
 
-@app.route('/submit_test', methods=['POST'])
+@app.route('/submit_test', methods=['GET', 'POST'] )
 def submit_test():
     session['num_players'] = int(request.form['num_players'])
     session['players_life'] = {request.form[f'player{i+1}']: 40 for i in range(session['num_players'])}
@@ -112,15 +112,15 @@ def submit_test():
     session['turn_count'] = 1
     
     start_game_radio = (request.form['start_game'])
-    digit = 0
+    session['digit'] = 0
     
     for char in start_game_radio:
         if char.isdigit():
-            digit = char
+            session['digit'] = char
             break
 
     # Set Active player to starting player
-    session['active_player_index'] = int(digit) - 1
+    session['active_player_index'] = int(session['digit']) - 1
 
     # Get the keys (players) as a list and access the nth key
     player_to_change = list(session['players_start'].keys())[session['active_player_index']]
@@ -134,13 +134,49 @@ def submit_test():
     session['start_turn_time'] = time.time()
     
     # Elapsed_time
-    session['end_time'] = time.time()
-    session['elapsed_time'] = session['end_time'] - session['start_time'] 
+    end_time = time.time()
+    session['elapsed_time'] = end_time - session['start_time'] 
     
     # Game ID
     folder_path = "data/"
     filename = os.path.join(folder_path, "game_data.csv")
     session['last_game_id'] = read_last_game_id(filename)
+    print(session)
+    return render_template('index.html',
+                           players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           digit = session['digit'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time']
+                           )
+
+
+@app.route('/update_life', methods=['POST'])
+def update_life():
+    session['player'] = request.form['player']
+    session['action'] = request.form['action']
+    session['amount'] = int(request.form['amount'])
+
+    if session['action'] == 'increase':
+         session['players_life'][session['player']] += session['amount']
+    elif session['action'] == 'decrease':
+         session['players_life'][session['player']] -= session['amount']
+
+    #  Elapsed_time
+    end_time = time.time()
+    session['elapsed_time'] = end_time - session['start_time']
 
     return render_template('index.html',
                            players  = session['players_life'],
@@ -151,118 +187,159 @@ def submit_test():
                            players_start = session['players_start'],
                            player_names = session['player_names'],
                            active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
                            turn_count = session['turn_count'],
-                           elapsed_time = session['elapsed_time'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'])
-
-
-@app.route('/update_life', methods=['POST'])
-def update_life():
-    player = request.form['player']
-    action = request.form['action']
-    amount = int(request.form['amount'])
-
-    if action == 'increase':
-        players_life[player] += amount
-    elif action == 'decrease':
-        players_life[player] -= amount
-
-    #  Elapsed_time
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-
-    return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
-                           turn_count=turn_count,  elapsed_time=elapsed_time, players_time = players_time, digit = digit,
-                           active_player_index = active_player_index, deck_names = deck_names, start_time = start_time, players_start = players_start)
+                           last_game_id = session['last_game_id'],
+                           digit = session['digit'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'])
 
 @app.route('/pass_turn', methods=['POST'])
 def pass_turn():
-    global active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, digit
     
     end_time = time.time()
-    turn_time = end_time - start_turn_time
+    turn_time = end_time - session['start_turn_time']
     
     # Update players' turn times
-    active_player = list(players_life.keys())[active_player_index]
-    players_time[active_player] = players_time.get(active_player, 0) + turn_time
+    active_player = list(session['players_life'].keys())[session['active_player_index']]
+    session['players_time'][active_player] =  session['players_time'].get(active_player, 0) + turn_time
     
     # Update active player index
-    active_player_index = (active_player_index - 1) % len(players_life)
+    session['active_player_index'] = (session['active_player_index'] - 1) % len(session['players_life'])
     
-    if active_player_index == (int(digit) - 1):  # If it's the first player's turn again
-        turn_count += 1
+    if session['active_player_index'] == (int(session['digit']) - 1):  # If it's the first player's turn again
+         session['turn_count'] += 1
 
      # Start time for the next turn
-    start_turn_time = time.time() 
+    session['start_turn_time'] = time.time() 
  
     #  Elapsed_time
-    elapsed_time = end_time - start_time
+    session['elapsed_time'] = end_time - session['start_time']
     
-    return render_template('index.html', players=players_life, active_player=list(players_life.keys())[active_player_index], 
-                           turn_count=turn_count, start_turn_time = start_turn_time, elapsed_time=elapsed_time, 
-                           turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
+    return render_template('index.html',
+                          players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           digit = session['digit'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'])
 
 @app.route('/change_active_player', methods=['POST'])
 def change_active_player():
-    global active_player_index, start_time, elapsed_time, players_time, deck_names, start_turn_time
-    
-    
+  
     # Update players' turn times
     end_time = time.time()
-    turn_time = end_time - start_turn_time
+    turn_time = end_time - session['start_turn_time']
     
     #  Elapsed_time
-    elapsed_time = end_time - start_time
+    session['elapsed_time'] = end_time -  session['start_time']
     
-    active_player = list(players_life.keys())[active_player_index]
-    players_time[active_player] = players_time.get(active_player, 0) + turn_time
+    active_player = list(session['players_life'].keys())[session['active_player_index']]
+    session['players_time'][active_player] = session['players_time'].get(active_player, 0) + turn_time
     
     selected_player = request.form.get('active_player')  # Get the selected player from the form data
-    active_player_index = list(players_life.keys()).index(selected_player)  # Set active player index based on selected player
+    session['active_player_index'] = list(session['players_life'].keys()).index(selected_player)  # Set active player index based on selected player
     
     # Start time for the next turn
-    start_turn_time = time.time()
+    session['start_turn_time'] = time.time()
     
-    return render_template('index.html', players=players_life, active_player=selected_player, turn_count=turn_count,start_turn_time = start_turn_time,
-                           elapsed_time=elapsed_time, active_player_index = active_player_index, players_time = players_time, deck_names = deck_names, start_time = start_time, 
-                           players_start = players_start, digit = digit)
+    return render_template('index.html',
+                         players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           digit = session['digit'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'])
 
 
 @app.route('/end_game', methods=['POST'])
 def render_end():
     
     
-    return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
-                           turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
+    return render_template('game_over.html',
+                           players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           digit = session['digit'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'])
 
 @app.route('/update_winner', methods=['POST'])
 def update_winner():
-    global players_win, active_player_index, turn_count, start_time, start_turn_time, turn_time, elapsed_time, players_time, active_player_index, deck_names, players_start, win_type, mv_card
-    
 
-    # Reset all players' win counts to 0
-    for player in players_win:
-        players_win[player] = 0
-    
     # Get the selected winner from the form data
     player = request.form['winner']
     
+        # Reset all players' win counts to 0
+    for player in session['players_win']:
+        session['players_win'][player] = 0
+    
     # Increment the win count for the selected winner
-    players_win[player] += 1
+    session['players_win'][player] += 1
     
     # Get the selected gameWinningType
-    win_type = request.form['gameWinningType']
+    session['win_type'] = request.form['gameWinningType']
     
-    mv_card = request.form['mvpCard']
+    session['mv_card'] = request.form['mvpCard']
     
     # Render the template with updated data
-    return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
-                           turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, player_won_select = players_win[player], digit = digit, win_type = win_type, mv_card = mv_card)
+    return render_template('game_over.html', 
+                           players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'],
+                           player_won_select = session['players_win'][player],
+                           digit = session['digit'],
+                           win_type = session['win_type'],
+                           mv_card = session['mv_card'])
 
 
 @app.route('/export_csv', methods=['POST'])
@@ -283,21 +360,21 @@ def export_csv():
             'Time (Minutes)',
             'Deck_Link' 
             ]]
-    for player in players_life:
+    for player in session['players_life']:
         data.append([
-            last_game_id + 1,                          # Game ID
-            "Normal",                                  # Game Type
-            datetime.now().strftime('%d-%m-%Y'),       # Date
-            player,                                    # Player
-            players_decks[player],                     # Commander
-            players_start[player],                     # Start
-            players_win[player],                       # Win
-            turn_count,                                # Win Turn
-            win_type,                                  # Win Type
-            mv_card,                                   # mv_card
-            players_life[player],                      # Life
-            round(players_time[player] / 60, 2),       # Time  
-            None                                       # Space for Deck link
+    session['last_game_id'] + 1,                            # Game ID
+            "Normal",                                       # Game Type
+            datetime.now().strftime('%d-%m-%Y'),            # Date
+            player,                                         # Player
+            session['players_decks'][player],               # Commander
+            session['players_start'][player],               # Start
+            session['players_win'][player],                 # Win
+            session['turn_count'] ,                         # Win Turn
+            session['win_type'],                            # Win Type
+            session['mv_card'],                             # mv_card
+            session['players_life'][player],                # Life
+            round(session['players_time'][player] / 60, 2), # Time  
+            None                                            # Space for Deck link
             ])      
                                                          
 
@@ -305,9 +382,27 @@ def export_csv():
     save_csv(data)  # Save CSV data to a file on the server
      
    # Return JSON response along with the CSV file as an attachment
-    return render_template('game_over.html', players_win=players_win, players=players_life, active_player=list(players_life.keys())[active_player_index],
-                           turn_count=turn_count, start_turn_time = start_turn_time, turn_time = turn_time, players_time = players_time, active_player_index = active_player_index,
-                           deck_names = deck_names, start_time = start_time, players_start = players_start, digit = digit)
+    return render_template('game_over.html', 
+                           players  = session['players_life'],
+                           players_life = session['players_life'],
+                           players_time = session['players_time'],
+                           players_decks = session['players_decks'],
+                           players_win = session['players_win'],
+                           players_start = session['players_start'],
+                           player_names = session['player_names'],
+                           active_player_index = session['active_player_index'],
+                           active_player = list(session['players_life'].keys())[session['active_player_index']],
+                           turn_count = session['turn_count'],
+                           turn_time = session['turn_time'],
+                           deck_names = session['deck_names'],
+                           last_game_id = session['last_game_id'],
+                           elapsed_time = session['elapsed_time'],
+                           start_time = session['start_time'],
+                           start_turn_time = session['start_turn_time'],
+                           player_won_select = session['players_win'][player],
+                           digit = session['digit'],
+                           win_type = session['win_type'],
+                           mv_card = session['mv_card'])
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

@@ -101,7 +101,7 @@ quantity_list <- lapply(json_data_list, function(i) {
                    type = t,
                    super_type = s,
                    category = c,
-                   maybe = m,
+                   cmdr_tag = m,
                    Deck_Link_clean = id) %>%
     filter(!str_detect(m, "Maybeboard")) 
 })
@@ -111,6 +111,9 @@ commander_decks <- quantity_list
 # Create data frame with all decks
 all_decks <- data.table::rbindlist(commander_decks)
 
+all_decks <- all_decks %>% 
+  mutate(cmdr_tag = case_when(cmdr_tag == "Commander" ~ 1,
+                              TRUE ~ 0))
 
 deck_infos <- data %>%
   select(Deck_Link_clean, Commander, Player, Deck_ID) %>% 
@@ -147,7 +150,6 @@ all_decks_join$type_2 <- gsub(pattern_4, '', all_decks_join$type_2)
 
 # Make regression data frame
 deck_summary <- all_decks_join %>% 
-  #  filter(Deck_ID == 4) %>% 
   group_by(Deck_ID, Player) %>% 
   summarise(Average_cmc = mean(cmc[cmc != 0], na.rm = T),
             Salt_Score = sum(salt, na.rm = T),

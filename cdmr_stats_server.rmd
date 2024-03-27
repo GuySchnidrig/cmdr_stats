@@ -49,7 +49,7 @@ data <- read_rds("deck_data.rds")
 all_decks_join <- read_rds("all_decks_join.rds")
 
 # Set Factors
-cols <- c("Game_ID","Game_Type", "Player", "Commander", "Colors", "Win_Type", "MV_Card", "Deck_ID")
+cols <- c("Game_ID","Game_Type", "Player", "Commander", "Win_Type", "MV_Card", "Deck_ID")
 
 data[cols] <- lapply(data[cols], factor)
 
@@ -74,7 +74,6 @@ color_list <- hcl.colors(length(unique(data$Player)), "Set 2")
 ```{r, echo = FALSE}
 ggplotly(
   data %>%
-  filter(Game_Type != "Draft") %>%
   group_by(Player) %>%
   summarise(Played_Games = length(Game_ID)) %>%
   ggplot(aes(x = reorder(Player,-Played_Games), y = Played_Games, fill = Player)) +
@@ -125,13 +124,13 @@ data %>%
             `Unique Players` = length(unique(Player)),
             `Unique Commanders` = length(unique(Commander)),
             `Average Win Turn` = round(mean(Win_Turn, na.rm = TRUE),2),
-            `Most Played Color Combo` = names(which.max(table(.$Colors)))) %>%
+            ) %>%
   knitr::kable(align = "l")
 ```
 
 ```{r, echo = FALSE}
 most_played_card <- all_decks_join %>% 
-  filter(type_1 != "Land", category != "Ramp") %>% 
+  filter(type_1 != "Land" | type_2 == "Land", category != "Ramp") %>% 
   group_by(card_name) %>%
   count() %>% 
   ungroup() %>% 
@@ -139,13 +138,13 @@ most_played_card <- all_decks_join %>%
   slice_head(n = 5)
 
 land_count <- all_decks_join %>%
-  filter(type_1 == "Land") %>% 
+  filter(type_1 == "Land" | type_2 == "Land") %>% 
   group_by(deck_name, Deck_ID, Player) %>% 
   summarise(Sum_land_count = sum(Quantity, na.rm = T))
 
 
 all_decks_join %>%
-  filter(type_1 != "Land") %>% 
+  filter(type_1 != "Land" | type_2 == "Land" ) %>% 
   #distinct(Deck_ID, .keep_all = TRUE) %>% 
   summarise(`Average land count` = mean(land_count$Sum_land_count),
             `Average cmc` = mean(cmc, na.rm = T),
@@ -207,12 +206,12 @@ ggplotly(deck_cmc_average %>%
 
 # Game data
 ```{r, echo=FALSE}
-DT::datatable(data, filter = 'top')
+DT::renderDataTable(data, filter = 'top')
 ```
 
 # Deck data
 ```{r, echo=FALSE}
-my_table <- DT::datatable(all_decks_join, filter = 'top')
+my_table <-  DT::renderDataTable(all_decks_join, filter = 'top', server = T)
 my_table
 
 ```
@@ -226,7 +225,6 @@ my_table
 
 ```{r, echo = FALSE}
 ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%  
            group_by(Player) %>%
            summarise(`Played Games` = length(Game_ID)) %>%
            ggplot(aes(x = reorder(Player,-`Played Games`), y = `Played Games`, fill = Player)) +
@@ -245,7 +243,6 @@ ggplotly(data %>%
 
 ```{r RGW, echo=FALSE}
 ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
   group_by(Player) %>%
   summarise(
     gl = length(unique(Game_ID)),
@@ -268,7 +265,6 @@ Won_games_relative = (sum(Win, na.rm = TRUE) / length(unique(Game_ID)))) %>%
 
 ```{r Commander, echo=FALSE}
 ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
            group_by(Commander, Player) %>%
            summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
            filter(Won_Games >= 1) %>% 
@@ -288,23 +284,17 @@ ggplotly(data %>%
 
 ```
 
-### Top 10 Games Won By Color Combo And Player
+### Win Turn by Win Type 
 
 ```{r Colorwin, echo=FALSE}
-ggplotly(data %>%
-           filter(Game_Type != "Draft") %>%
-           group_by(Colors, Player) %>%
-           summarise(Won_Games = (sum(Win, na.rm = TRUE))) %>%
-           filter(Won_Games >= 1) %>%
-           ungroup() %>% 
-           arrange(desc(Won_Games)) %>% 
-           slice_head(n = 10) %>% 
-           ggplot(aes(x = reorder(Colors,-Won_Games), y = Won_Games, fill = Player)) +
-           geom_bar(stat = "identity") +
-           scale_fill_manual(values = player_color_mapping$color) +
-           labs(x = "", y = "Games Won") +
+ggplotly(data[!is.na(data$Win_Type),] %>%
+           filter(Win == 1) %>% 
+           ggplot(aes(x = as.factor(Win_Type), y = Win_Turn, fill = Win_Type)) +
+          geom_boxplot() +
+           scale_fill_manual(values = player_color_mapping$color)+
+           labs(x = "", y = "Win Turn") +
            theme_bw() + 
-           theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+           theme(axis.text.x = element_text(vjust = 0.5, hjust=1),
                  panel.grid = element_blank()))  %>% 
   plotly::config(displayModeBar = F) %>% 
   plotly::layout(xaxis=list(fixedrange=TRUE)) %>% 
@@ -335,11 +325,10 @@ selectInput(
 ```{r player stats, echo=FALSE}
 renderTable({
   data %>%
-    filter(Player == input$Player &  Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>% 
+    filter(Player == input$Player) %>% 
     summarise(`Total Games` = length(unique(Game_ID)),
             `Unique Commanders` = length(unique(Commander)),
-            `Average Win Turn` = round(mean(Win_Turn[Win == 1], na.rm = TRUE),2),
-            `Most played Color` = names(which.max(table(.$Colors)))) %>% 
+            `Average Win Turn` = round(mean(Win_Turn[Win == 1], na.rm = TRUE),2)) %>% 
     as.data.table() })
 ```
 
@@ -352,7 +341,7 @@ renderTable({
   count() %>% 
   ungroup() %>% 
   arrange(desc(n)) %>%
-  slice_head(n = 5) %>% 
+  slice_head(n = 10) %>% 
     rename("Count" = "n",
            "Card Name" = "card_name") %>% 
     as.data.table() })
@@ -365,6 +354,9 @@ renderTable({
     filter(Player == input$Player) %>%  # input$Player
     group_by(Player) %>% 
     summarise(`Average land count` = mean(Sum_land_count, na.rm = T),
+              `Median land count` = median(Sum_land_count, na.rm = T),
+              `Max land count` = max(Sum_land_count, na.rm = T),
+              `Min land count` = min(Sum_land_count, na.rm = T),
               ) %>% 
     select(-Player) %>% 
     as.data.table() })
@@ -375,7 +367,7 @@ renderTable({
 
 ```{r player stats4, echo=FALSE}
 renderTable({ data %>% 
-  filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+  filter(Player == input$Player) %>%
   group_by(Commander) %>%
   summarise(`Games played` = length(Commander),
             Wins = as.integer(sum(Win, na.rm = T)),
@@ -393,7 +385,7 @@ renderTable({ data %>%
 renderPlot({
 
     t <- data %>%
-      filter(Player == input$Player & Game_Type != ifelse(input$Game_Type == "Normal", "Draft", "")) %>%
+      filter(Player == input$Player) %>%
       group_by(Commander) %>%
       summarise(`Games played` = n()) %>%
       arrange(desc(`Games played`)) %>%

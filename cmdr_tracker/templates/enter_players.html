@@ -49,6 +49,11 @@
             
             background-color: #D1D0D2;
         }
+
+        .start-radio:checked {
+            color: black /* Change this to the desired color */
+        }
+        
     </style>
 </head>
 <body>
@@ -124,12 +129,18 @@
                     deckSelect.appendChild(option);
                 }
 
+                // Add "Other" option
+                var otherOption = document.createElement("option");
+                otherOption.value = "Other";
+                otherOption.text = "Other";
+                deckSelect.appendChild(otherOption);
+
                 playerRow.appendChild(deckSelect);
 
                 // Create the radio button container
                 var startRadioContainer = document.createElement("div");
                 startRadioContainer.classList.add("radio-container");
-
+                
                 // Add checkbox for starting the game
                 // Create the radio button for starting the game
                 var startRadio = document.createElement("input");
@@ -139,8 +150,7 @@
                 startRadio.id = "start_game" + (i + 1);
                 startRadio.classList.add("start-radio");
                 startRadio.style.transform = "scale(1.5)"; // Scale the checkbox to make it larger
-
-
+                
                 // Create the label for the radio button
                 var startLabel = document.createElement("label");
                 startLabel.htmlFor = "start_game" + (i + 1);
@@ -151,6 +161,7 @@
 
                 // Append the player row to the container
                 playerInputsContainer.appendChild(playerRow);
+
 
                 
             }
@@ -167,6 +178,25 @@
                     // Find the "Other" option in the dropdown
                     var playerSelect = event.target;
                     var otherOption = playerSelect.querySelector('option[value="Other"]');
+                    
+                    // Update the "Other" option with the manually entered value
+                    otherOption.value = manualInput;
+                    otherOption.text = manualInput;
+                    
+                    // Optionally, select the manually entered value
+                    otherOption.selected = true;
+                }
+            }
+        });
+
+        // Add event listener to detect when "Other" is selected for deck
+        document.addEventListener('change', function(event) {
+            if (event.target.classList.contains('deck-select') && event.target.value === 'Other') {
+                var manualInput = prompt('Enter deck name:');
+                if (manualInput !== null) {
+                    // Find the "Other" option in the dropdown
+                    var deckSelect = event.target;
+                    var otherOption = deckSelect.querySelector('option[value="Other"]');
                     
                     // Update the "Other" option with the manually entered value
                     otherOption.value = manualInput;

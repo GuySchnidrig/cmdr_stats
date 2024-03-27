@@ -3,3 +3,6 @@ Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
+61,Reduced,27-03-2024,Aless,"Aesi, Tyrant of Gyre Strait",0,0,4,Commander Damage,asas,40,0.01,
+61,Reduced,27-03-2024,Domi,Abaddon the Despoiler,1,0,4,Commander Damage,asas,40,0.09,
+61,Reduced,27-03-2024,Domi69,"Aesi, Tyrant of Gyre Strait",0,1,4,Commander Damage,asas,40,0.01,

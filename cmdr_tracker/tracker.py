@@ -70,7 +70,7 @@ def login():
         if username == USER_CREDENTIALS['username'] and password == USER_CREDENTIALS['password']:
             session['logged_in'] = True
             session['username'] = username
-            flash("Login successful!", "success")
+            flash("Login successful!", "info")
             return redirect(url_for('enter_players'))
         else:
             flash("Invalid username or password. Please try again.", "error")
@@ -196,6 +196,7 @@ def update_life():
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
                            start_turn_time = session['start_turn_time'])
+    
 
 @app.route('/pass_turn', methods=['POST'])
 def pass_turn():
@@ -208,7 +209,7 @@ def pass_turn():
     session['players_time'][active_player] =  session['players_time'].get(active_player, 0) + turn_time
     
     # Update active player index
-    session['active_player_index'] = (session['active_player_index'] - 1) % len(session['players_life'])
+    session['active_player_index'] = (session['active_player_index'] + 1) % len(session['players_life'])
     
     if session['active_player_index'] == (int(session['digit']) - 1):  # If it's the first player's turn again
          session['turn_count'] += 1
@@ -344,6 +345,11 @@ def update_winner():
 
 @app.route('/export_csv', methods=['POST'])
 def export_csv():
+    
+    game_type = "Normal"
+    if session['num_players'] == 3:
+        game_type = "Reduced"
+    
     # Data
     data = [[
             'Game_ID',
@@ -363,7 +369,7 @@ def export_csv():
     for player in session['players_life']:
         data.append([
     session['last_game_id'] + 1,                            # Game ID
-            "Normal",                                       # Game Type
+            game_type,                                      # Game Type
             datetime.now().strftime('%d-%m-%Y'),            # Date
             player,                                         # Player
             session['players_decks'][player],               # Commander

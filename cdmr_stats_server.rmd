@@ -320,7 +320,7 @@ Choose a Player:
 ```{r slider input, echo=FALSE}
 selectInput(
   "Player", label = "Player:",
-  choices = c(unique(data$Player)), selected = "Aless")
+  choices = c(unique(data$Player)), selected = "Ale")
 
 selectInput(
   "Game_Type", label = "Gametype:",
@@ -533,8 +533,7 @@ data_reduced_2$Start <- as.factor(data_reduced_2$Start)
 
 
 data_reduced_2 <- data_reduced_2 %>% 
-  mutate_if(is.numeric, scale) %>% 
-  filter(Player != "Lucien")
+  mutate_if(is.numeric, scale)
 
 model_2 <- glm(formula = Win ~ Player + Start + Win_Turn + Average_cmc + Salt_Score +
                  Artifacts + Creatures + Ramp + Draw + Removal + Protection + Tutor + 

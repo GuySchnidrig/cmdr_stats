@@ -5,6 +5,7 @@ import csv
 from io import StringIO
 import os
 from datetime import datetime
+import json
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -16,20 +17,9 @@ script_directory = os.path.dirname(__file__)
 os.chdir(script_directory)
 
 # Configuration settings
-USER_CREDENTIALS = {
-    'Aless': '1234',
-    'Domi': '1234',
-    'Domi69': '1234',
-    'Elie': '1234',
-    'Fubu': '1234',
-    'Guy': '1234',
-    'Lucien': '1234',
-    'Lueku': '1234',
-    'Nico': '1234',
-    'Nils': '1234',
-    'Tobi': '1234',
-    'Vince': '1234'
-}
+with open('user_credentials.json', 'r') as file:
+    data = json.load(file)
+    USER_CREDENTIALS = data['USER_CREDENTIALS']
 
 # Load suggestions
 def read_txt_file(file_path):
@@ -150,10 +140,6 @@ def submit_test():
     end_time = time.time()
     session['elapsed_time'] = end_time - session['start_time'] 
     
-    # Game ID
-    folder_path = "data/"
-    filename = os.path.join(folder_path, "game_data.csv")
-    session['last_game_id'] = read_last_game_id(filename)
     print(session)
     return render_template('index.html',
                            players  = session['players_life'],
@@ -168,7 +154,6 @@ def submit_test():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            digit = session['digit'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
@@ -204,7 +189,6 @@ def update_life():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            digit = session['digit'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
@@ -247,7 +231,6 @@ def pass_turn():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            digit = session['digit'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
@@ -285,7 +268,6 @@ def change_active_player():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            digit = session['digit'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
@@ -309,7 +291,6 @@ def render_end():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            digit = session['digit'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
@@ -347,7 +328,6 @@ def update_winner():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
                            start_turn_time = session['start_turn_time'],
@@ -363,6 +343,13 @@ def export_csv():
     game_type = "Normal"
     if session['num_players'] == 3:
         game_type = "Reduced"
+    
+    
+    # Game ID
+    folder_path = "data/"
+    filename = os.path.join(folder_path, "game_data.csv")
+    session['last_game_id'] = read_last_game_id(filename)
+    
     
     # Data
     data = [[
@@ -383,7 +370,7 @@ def export_csv():
             ]]
     for player in session['players_life']:
         data.append([
-    session['last_game_id'] + 1,                            # Game ID
+            session['last_game_id'] + 1,                    # Game ID
             game_type,                                      # Game Type
             datetime.now().strftime('%d-%m-%Y'),            # Date
             player,                                         # Player
@@ -417,7 +404,6 @@ def export_csv():
                            turn_count = session['turn_count'],
                            turn_time = session['turn_time'],
                            deck_names = session['deck_names'],
-                           last_game_id = session['last_game_id'],
                            elapsed_time = session['elapsed_time'],
                            start_time = session['start_time'],
                            start_turn_time = session['start_turn_time'],

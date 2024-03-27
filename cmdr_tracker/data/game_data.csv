@@ -1,4 +1,4 @@
-Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_card, Life, Time (Minutes), Deck_Link
+Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_card, Life, Time (Minutes), Deck_Link, Uploader
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
 60,Normal,25-03-2024,Aless,Abaddon the Despoiler,0,0,1,Non-Combat Damage,TEST,40,0.0,
@@ -14,3 +14,15 @@ Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_
 62,Normal,27-03-2024,Fubu,Abaddon the Despoiler,0,0,3,Combo,TESTsssss,40,0.04,,Aless
 62,Normal,27-03-2024,Nico,"Arcades, the Strategist",1,0,3,Combo,TESTsssss,40,0.03,,Aless
 62,Normal,27-03-2024,Vince,"Arcades, the Strategist",0,1,3,Combo,TESTsssss,36,0.0,,Aless
+62,Normal,27-03-2024,Aless,Abaddon the Despoiler,0,0,3,Commander Damage,asas,40,0.01,,Aless
+62,Normal,27-03-2024,Fubu,Abaddon the Despoiler,0,0,3,Commander Damage,asas,40,0.04,,Aless
+62,Normal,27-03-2024,Nico,"Arcades, the Strategist",1,0,3,Commander Damage,asas,40,0.03,,Aless
+62,Normal,27-03-2024,Vince,"Arcades, the Strategist",0,1,3,Commander Damage,asas,36,0.0,,Aless
+63,Normal,27-03-2024,Aless,Abaddon the Despoiler,0,0,4,Combo,Spacersss,44,0.01,,Tobi
+63,Normal,27-03-2024,Domi,"Arcades, the Strategist",0,0,4,Combo,Spacersss,43,0.01,,Tobi
+63,Normal,27-03-2024,Guy,"Archelos, Lagoon Mystic",0,0,4,Combo,Spacersss,35,0.09,,Tobi
+63,Normal,27-03-2024,Nils,"Aesi, Tyrant of Gyre Strait",1,1,4,Combo,Spacersss,38,0.01,,Tobi
+64,Normal,27-03-2024,Aless,Abaddon the Despoiler,0,0,4,Combo,TEST,44,0.01,,Tobi
+64,Normal,27-03-2024,Domi,"Arcades, the Strategist",0,0,4,Combo,TEST,43,0.01,,Tobi
+64,Normal,27-03-2024,Guy,"Archelos, Lagoon Mystic",0,0,4,Combo,TEST,35,0.09,,Tobi
+64,Normal,27-03-2024,Nils,"Aesi, Tyrant of Gyre Strait",1,1,4,Combo,TEST,38,0.01,,Tobi

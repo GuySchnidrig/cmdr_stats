@@ -46,10 +46,6 @@ data <- data %>%
   mutate(Deck_ID = cur_group_id()) %>%
   ungroup()
 
-# Set Factors
-cols <- c("Game_ID","Game_Type", "Player", "Commander", "Colors", "Win_Type", "MV_Card", "Deck_ID")
-data[cols] <- lapply(data[cols], factor)
-
 # Set Date
 data$Date <- lubridate::dmy(data$Date)
 
@@ -60,10 +56,9 @@ deck_list <- data %>%
   distinct(Deck_Link, Deck_ID)
 
 # Add right api path and ending
-deck_list$Deck_Link <- deck_list$Deck_Link %>%
-  str_replace(.,"decks", "api/decks") %>%
-  str_replace(.,"www.", "") %>%
-  gsub("#.*", "", .)
+deck_list <- deck_list %>%
+  mutate(Deck_Link = gsub("https?://(www\\.)?archidekt\\.com/(decks/\\d+).*", "https://archidekt.com/api/\\2", Deck_Link))
+
 
 deck_list <- deck_list %>%
   mutate(Deck_Link_clean = paste0(Deck_Link,"/")) %>%
@@ -94,10 +89,13 @@ quantity_list <- lapply(json_data_list, function(i) {
   d = i$name
   m = as.character(i$cards$categories)
   id = deck_list$Deck_Link_clean[counter]
+  col = i$cards$card$oracleCard$colorIdentity
+  
   result <- tibble(deck_name = d,
                    card_name = n,
                    Quantity = x,
                    cmc = z,
+                   color = col,
                    salt = g,
                    price = p,
                    type = t,

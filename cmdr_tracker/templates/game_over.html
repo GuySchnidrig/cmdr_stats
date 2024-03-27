@@ -96,23 +96,43 @@
                     </select>
         
                     <br>
-
-                    <button type="submit" >Submit</button>
+                    
+                    Click here to set end game stats: <button type="submit" >Submit</button>
+                    <p> First press "Submit" then "Save Game Data" </p>
                 </form> 
                 
         </div>
+        
         <div class="button-container">
         <form action="/export_csv" method="post", class="export-csv">
-            <button type="submit" class="export-csv-btn">Save Game Data</button>
+            Click here to send data to server (submit first!): <button type="submit" class="export-csv-btn" id ="sendDataButton">Save Game Data</button>
         </form>
         </div>
 
+        <script>
+            // JavaScript code to handle the popup
+            document.getElementById("sendDataButton").addEventListener("click", function(event) {
+                if (!confirm("Are you sure you want to send Data? (Submit first)")) {
+                    // If user cancels, prevent the default form submission action
+                    event.preventDefault();
+                }
+            });
+        </script>
+
         <div class="button-container">
             <form action="/enter_players" method="get">
-                <button type="submit">New Game</button>
+                Click here to start a: <button type="submit" id="newGameButton">New Game</button>
             </form>
         </div>
-
+        <script>
+            // JavaScript code to handle the popup
+            document.getElementById("newGameButton").addEventListener("click", function(event) {
+                if (!confirm("Are you sure you want to start a new game?")) {
+                    // If user cancels, prevent the default form submission action
+                    event.preventDefault();
+                }
+            });
+        </script>
         
         
     </body>

@@ -220,11 +220,11 @@
 
         
         <div class="turn-container">
-            Turn: {{ turn_count }}
+            Turn: <span id="turn-count">{{ turn_count }}</span>
             <form action="/pass_turn" method="post" class="pass-turn-form">
             <button type="submit">Pass Turn</button>
         </div> 
-        
+
         <div class="turn-container">
 
             <div id="turn-time" class="time-font">Turn:</div>

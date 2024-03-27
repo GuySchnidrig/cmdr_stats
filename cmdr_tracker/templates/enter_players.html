@@ -86,6 +86,7 @@
                 var playerSelect = document.createElement("select");
                 playerSelect.name = "player" + (i + 1);
                 playerSelect.classList.add("player-select");
+                playerSelect.required = true; // Make the field required
 
                 var playerOption = document.createElement("option");
                 playerOption.value = "";
@@ -114,6 +115,7 @@
                 var deckSelect = document.createElement("select");
                 deckSelect.name = "deck" + (i + 1);
                 deckSelect.classList.add("deck-select");
+                deckSelect.required = true; // Make the field required
 
                 var deckOption = document.createElement("option");
                 deckOption.value = "";
@@ -150,6 +152,7 @@
                 startRadio.id = "start_game" + (i + 1);
                 startRadio.classList.add("start-radio");
                 startRadio.style.transform = "scale(1.5)"; // Scale the checkbox to make it larger
+                startRadio.required = true; // Make the radio button required
                 
                 // Create the label for the radio button
                 var startLabel = document.createElement("label");

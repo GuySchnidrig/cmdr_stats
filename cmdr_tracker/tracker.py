@@ -16,7 +16,20 @@ script_directory = os.path.dirname(__file__)
 os.chdir(script_directory)
 
 # Configuration settings
-USER_CREDENTIALS = {'username': 'Guy', 'password': '1234'}
+USER_CREDENTIALS = {
+    'Aless': '1234',
+    'Domi': '1234',
+    'Domi69': '1234',
+    'Elie': '1234',
+    'Fubu': '1234',
+    'Guy': '1234',
+    'Lucien': '1234',
+    'Lueku': '1234',
+    'Nico': '1234',
+    'Nils': '1234',
+    'Tobi': '1234',
+    'Vince': '1234'
+}
 
 # Load suggestions
 def read_txt_file(file_path):
@@ -67,7 +80,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == USER_CREDENTIALS['username'] and password == USER_CREDENTIALS['password']:
+        if username in USER_CREDENTIALS and password == USER_CREDENTIALS[username]:
             session['logged_in'] = True
             session['username'] = username
             flash("Login successful!", "info")
@@ -197,6 +210,7 @@ def update_life():
                            start_time = session['start_time'],
                            start_turn_time = session['start_turn_time'])
     
+
 
 @app.route('/pass_turn', methods=['POST'])
 def pass_turn():
@@ -364,7 +378,8 @@ def export_csv():
             'mv_card',
             'Life', 
             'Time (Minutes)',
-            'Deck_Link' 
+            'Deck_Link'
+            'Uploader'
             ]]
     for player in session['players_life']:
         data.append([
@@ -380,7 +395,8 @@ def export_csv():
             session['mv_card'],                             # mv_card
             session['players_life'][player],                # Life
             round(session['players_time'][player] / 60, 2), # Time  
-            None                                            # Space for Deck link
+            None,                                           # Space for Deck link
+            session['username']                             # Uploader
             ])      
                                                          
 

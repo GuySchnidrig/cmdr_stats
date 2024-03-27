@@ -6,3 +6,11 @@ Game_ID, Game_Type, Date, Player, Commander, Start, Win, Win_Turn, Win_Type, mv_
 61,Reduced,27-03-2024,Aless,"Aesi, Tyrant of Gyre Strait",0,0,4,Commander Damage,asas,40,0.01,
 61,Reduced,27-03-2024,Domi,Abaddon the Despoiler,1,0,4,Commander Damage,asas,40,0.09,
 61,Reduced,27-03-2024,Domi69,"Aesi, Tyrant of Gyre Strait",0,1,4,Commander Damage,asas,40,0.01,
+62,Normal,27-03-2024,Aless,Abaddon the Despoiler,0,0,3,Combo,TESTsssss,40,0.01,,Aless
+62,Normal,27-03-2024,Fubu,Abaddon the Despoiler,0,0,3,Combo,TESTsssss,40,0.04,,Aless
+62,Normal,27-03-2024,Nico,"Arcades, the Strategist",1,0,3,Combo,TESTsssss,40,0.03,,Aless
+62,Normal,27-03-2024,Vince,"Arcades, the Strategist",0,1,3,Combo,TESTsssss,36,0.0,,Aless
+62,Normal,27-03-2024,Aless,Abaddon the Despoiler,0,0,3,Combo,TESTsssss,40,0.01,,Aless
+62,Normal,27-03-2024,Fubu,Abaddon the Despoiler,0,0,3,Combo,TESTsssss,40,0.04,,Aless
+62,Normal,27-03-2024,Nico,"Arcades, the Strategist",1,0,3,Combo,TESTsssss,40,0.03,,Aless
+62,Normal,27-03-2024,Vince,"Arcades, the Strategist",0,1,3,Combo,TESTsssss,36,0.0,,Aless

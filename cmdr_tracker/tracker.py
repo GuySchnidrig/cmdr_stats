@@ -103,10 +103,7 @@ def enter_players():
     print(session['players_life'])
     return render_template('enter_players.html', 
                            commander_names_suggestions=commander_names_suggestions,
-                           player_names_suggestions=player_names_suggestions,
-                           players  = session['players_life'],
-                           player_order = session['player_order'],
-                           players_life = session['players_life'],)
+                           player_names_suggestions=player_names_suggestions)
 
 
 @app.route('/submit_test', methods=['POST'] )
@@ -148,6 +145,8 @@ def submit_test():
     end_time = time.time()
     session['elapsed_time'] = end_time - session['start_time'] 
     
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
     print(session['players_life'],
           session['player_order'],
            session['players_decks']
@@ -188,6 +187,10 @@ def update_life():
     #  Elapsed_time
     end_time = time.time()
     session['elapsed_time'] = end_time - session['start_time']
+    
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
+    
     print(session['players_life'],
           session['player_order'],
            session['players_decks'])
@@ -233,6 +236,10 @@ def pass_turn():
  
     #  Elapsed_time
     session['elapsed_time'] = end_time - session['start_time']
+    
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
+    
     print(session['players_life'],
           session['player_order'],)
     return render_template('index.html',
@@ -260,6 +267,8 @@ def change_active_player():
     end_time = time.time()
     turn_time = end_time - session['start_turn_time']
     
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
     #  Elapsed_time
     session['elapsed_time'] = end_time -  session['start_time']
     
@@ -271,6 +280,8 @@ def change_active_player():
     
     # Start time for the next turn
     session['start_turn_time'] = time.time()
+    
+    
     
     return render_template('index.html',
                          players  = session['players_life'],
@@ -294,6 +305,8 @@ def change_active_player():
 @app.route('/end_game', methods=['POST'])
 def render_end():
     
+     # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
     
     return render_template('game_over.html',
                            players  = session['players_life'],
@@ -316,6 +329,8 @@ def render_end():
 @app.route('/update_winner', methods=['POST'])
 def update_winner():
 
+    
+    
     # Get the selected winner from the form data
     player = request.form['winner']
     
@@ -330,6 +345,9 @@ def update_winner():
     session['win_type'] = request.form['gameWinningType']
     
     session['mv_card'] = request.form['mvpCard']
+    
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
     
     # Render the template with updated data
     return render_template('game_over.html', 
@@ -406,7 +424,10 @@ def export_csv():
 
     # Save copy to server
     save_csv(data)  # Save CSV data to a file on the server
-     
+    
+    # Reorder the dictionary based on the player order list
+    session['players_life'] = {key: session['players_life'][key] for key in  session['player_order']}
+    
    # Return JSON response along with the CSV file as an attachment
     return render_template('game_over.html', 
                            players  = session['players_life'],

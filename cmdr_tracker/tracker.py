@@ -6,6 +6,7 @@ from io import StringIO
 import os
 from datetime import datetime
 import json
+from collections import OrderedDict
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -80,7 +81,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/enter_players')
+@app.route('/enter_players', methods=['GET', 'POST'])
 def enter_players():
     if 'logged_in' in session and session['logged_in']:
         session['players_life'] = {'Player 1': 40, 'Player 2': 40, 'Player 3': 40, 'Player 4': 40}
@@ -89,20 +90,26 @@ def enter_players():
         session['players_win'] = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
         session['players_start'] = {'Player 1': 0, 'Player 2': 0, 'Player 3': 0, 'Player 4': 0}
 
-        session['active_player_index'] = 0
+        session['active_player_index'] = 1
         session['turn_count'] = 1
         session['start_time'] = None
         session['turn_time'] = None
         session['start_turn_time'] = None
         session['new_game_id'] = 0
         session['num_players'] = 0
-    print(session)    
+        
+        
+        
+    print(session['players_life'])
     return render_template('enter_players.html', 
                            commander_names_suggestions=commander_names_suggestions,
-                           player_names_suggestions=player_names_suggestions)
+                           player_names_suggestions=player_names_suggestions,
+                           players  = session['players_life'],
+                           player_order = session['player_order'],
+                           players_life = session['players_life'],)
 
 
-@app.route('/submit_test', methods=['GET', 'POST'] )
+@app.route('/submit_test', methods=['POST'] )
 def submit_test():
     session['num_players'] = int(request.form['num_players'])
     session['players_life'] = {request.form[f'player{i+1}']: 40 for i in range(session['num_players'])}
@@ -113,6 +120,7 @@ def submit_test():
     session['player_names'] = [request.form[f'player{i+1}'] for i in range(session['num_players'])]
     session['deck_names'] = [request.form[f'deck{i+1}'] for i in range(session['num_players'])]
     session['turn_count'] = 1
+    session['player_order'] = list(session['players_life'].keys())
     
     start_game_radio = (request.form['start_game'])
     session['digit'] = 0
@@ -140,9 +148,14 @@ def submit_test():
     end_time = time.time()
     session['elapsed_time'] = end_time - session['start_time'] 
     
-    print(session)
+    print(session['players_life'],
+          session['player_order'],
+           session['players_decks']
+          )
+    
     return render_template('index.html',
                            players  = session['players_life'],
+                           player_order = session['player_order'],
                            players_life = session['players_life'],
                            players_time = session['players_time'],
                            players_decks = session['players_decks'],
@@ -175,9 +188,12 @@ def update_life():
     #  Elapsed_time
     end_time = time.time()
     session['elapsed_time'] = end_time - session['start_time']
-
+    print(session['players_life'],
+          session['player_order'],
+           session['players_decks'])
     return render_template('index.html',
                            players  = session['players_life'],
+                           player_order = session['player_order'],
                            players_life = session['players_life'],
                            players_time = session['players_time'],
                            players_decks = session['players_decks'],
@@ -217,7 +233,8 @@ def pass_turn():
  
     #  Elapsed_time
     session['elapsed_time'] = end_time - session['start_time']
-    
+    print(session['players_life'],
+          session['player_order'],)
     return render_template('index.html',
                           players  = session['players_life'],
                            players_life = session['players_life'],
